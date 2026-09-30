@@ -137,7 +137,7 @@ function favicon(d, color) {
 
 function pagina(d, url) {
   const sector = SECTORES[d.tipo] || SECTORES.generico;
-  const demo = d.demo !== false;
+  const demo = d.demo === true; // solo los ejemplos de main son demos (noindex)
   const color = /^#[0-9a-f]{3,8}$/i.test(d.color || "") ? d.color : "#1f6f5c";
   const tel = soloDigitos(d.telefono);
   const wa = String(d.whatsapp || "").replace(/\D/g, "");
@@ -167,7 +167,7 @@ function pagina(d, url) {
     : "";
   const botones = [
     cta,
-    tel && `<a class="btn" href="tel:${esc(tel)}">📞 Llamar</a>`,
+    tel && `<a class="btn" href="tel:${esc(tel)}">📞 ${esc(d.telefono)}</a>`,
     wa && d.enlaceReserva && `<a class="btn" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">💬 WhatsApp</a>`,
     `<a class="btn" href="${esc(comoLlegar)}" target="_blank" rel="noopener">📍 Cómo llegar</a>`,
   ].filter(Boolean).join("\n      ");
@@ -236,7 +236,7 @@ function pagina(d, url) {
     .join(" · ");
 
   const barraMovil = ctaHref || tel
-    ? `<nav class="barra" aria-label="Contacto rápido">${cta}${tel ? `<a class="btn" href="tel:${esc(tel)}">📞 Llamar</a>` : ""}</nav>`
+    ? `<nav class="barra" aria-label="Contacto rápido">${cta}${tel ? `<a class="btn" href="tel:${esc(tel)}">📞 ${esc(d.telefono)}</a>` : ""}</nav>`
     : "";
 
   return `<!doctype html>
@@ -272,7 +272,7 @@ ${schemas(d, sector, url)}
   header .eslogan { font-size: 1.15rem; margin: 14px 0 0; }
   .rating { margin: 10px 0 0; } .rating span { color: #ffd54a; letter-spacing: 1px; }
   .acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; background: #fff; color: var(--c); padding: 12px 18px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 2px solid #fff; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; background: #fff; color: var(--c); padding: 12px 18px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 2px solid #fff; white-space: nowrap; }
   .btn-main { background: #111; color: #fff; border-color: #111; }
   .btn:hover { filter: brightness(.95); }
   section { padding: 36px 0 8px; }
@@ -323,7 +323,7 @@ ${schemas(d, sector, url)}
   .barra { display: none; }
   @media (max-width: 640px) {
     .barra { display: flex; gap: 8px; position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); z-index: 10; }
-    .barra .btn { flex: 1; padding: 12px 8px; } .barra .btn:not(.btn-main) { border-color: var(--c); }
+    .barra .btn { flex: 1; padding: 12px 6px; font-size: clamp(.85rem, 4vw, 1rem); } .barra .btn:not(.btn-main) { border-color: var(--c); }
     .barra .btn-main { background: var(--c); border-color: var(--c); }
     body { padding-bottom: 76px; }
   }
@@ -435,25 +435,27 @@ function main() {
   if (escaparate) lista = leerCarpetas(path.join(RAIZ, "ejemplos")).map((l) => ({ ...l, d: { ...l.d, demo: true } }));
 
   const enRaiz = lista.length === 1 && !escaparate;
+  // URL pública: dominio propio del local, o la de Cloudflare que pasa el workflow (SITE_URL)
+  const base = (process.env.SITE_URL || "").replace(/\/?$/, "/").replace(/^\/$/, "");
+  const urlDe = (slug, d) => (d.dominio ? d.dominio.replace(/\/?$/, "/") : base ? (enRaiz ? base : `${base}${slug}/`) : "");
   for (const { slug, dir, d } of lista) {
     for (const f of todasLasFotos(d)) {
       if (!esAbsoluta(f.src) && !fs.existsSync(path.join(dir, f.src))) throw new Error(`[${slug}] no existe la imagen "${f.src}"`);
     }
     const salida = enRaiz ? DIST : path.join(DIST, slug);
-    // La URL pública solo se conoce cuando el local tiene dominio propio (web definitiva).
-    const url = d.dominio ? d.dominio.replace(/\/?$/, "/") : "";
+    const url = urlDe(slug, d);
     fs.mkdirSync(salida, { recursive: true });
     copiarCarpeta(dir, salida);
     fs.writeFileSync(path.join(salida, "index.html"), pagina(d, url));
-    console.log(`✔ ${slug}${d.demo !== false ? " (demo, noindex)" : ""}`);
+    console.log(`✔ ${slug}${d.demo === true ? " (demo, noindex)" : ""}${url ? `  ${url}` : ""}`);
   }
 
   if (!enRaiz) fs.writeFileSync(path.join(DIST, "index.html"), indice(lista));
 
   // robots.txt, sitemap y cabeceras (Cloudflare Pages lee _headers)
   const unico = enRaiz ? lista[0].d : null;
-  if (unico && unico.demo === false) {
-    const url = unico.dominio ? unico.dominio.replace(/\/?$/, "/") : "";
+  if (unico && unico.demo !== true) {
+    const url = urlDe(lista[0].slug, unico);
     fs.writeFileSync(path.join(DIST, "robots.txt"), `User-agent: *\nAllow: /\n${url ? `Sitemap: ${url}sitemap.xml\n` : ""}`);
     if (url) {
       fs.writeFileSync(
@@ -462,7 +464,7 @@ function main() {
       );
     }
   } else {
-    // Demo: se deja rastrear para que Google vea el noindex, pero nunca se indexa.
+    // Ejemplos (demo): se deja rastrear para que Google vea el noindex, pero nunca se indexa.
     fs.writeFileSync(path.join(DIST, "robots.txt"), "User-agent: *\nAllow: /\n");
     fs.writeFileSync(path.join(DIST, "_headers"), "/*\n  X-Robots-Tag: noindex, nofollow\n");
   }

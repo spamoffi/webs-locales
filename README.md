@@ -6,11 +6,11 @@ Webs de una sola página para negocios de Google Maps. Sin servidor, sin base de
 
 - **`main`** solo tiene la plantilla (`build.js`) y los ejemplos (`ejemplos/`). Su web publicada es un escaparate con los ejemplos.
 - **Cada local tiene su propia rama `local/<nombre>`**, creada desde `main`, con una única carpeta `locales/<nombre>/datos.json`.
-- Cloudflare publica cada rama automáticamente en su propia dirección, que es el enlace de la demo para el cliente:
+- Cloudflare publica cada rama automáticamente en su propia dirección, que es el enlace de la web para el cliente:
   `local/peluqueria-marta` → `https://local-peluqueria-marta-webs-locales.<tu-subdominio>.workers.dev`
-- **Las ramas `local/...` nunca se fusionan en `main`.** Si se abre una pull request de una demo, sirve solo para revisarla.
+- **Las ramas `local/...` nunca se fusionan en `main`.** Si se abre una pull request de un local, sirve solo para revisarlo.
 
-### Crear la demo de un local
+### Crear la web de un local
 
 ```bash
 git checkout main && git pull
@@ -19,16 +19,14 @@ mkdir -p locales/peluqueria-marta
 cp ejemplos/peluqueria/datos.json locales/peluqueria-marta/   # el ejemplo más parecido
 # editar locales/peluqueria-marta/datos.json
 node build.js                                                  # comprobar que genera sin errores
-git add -A && git commit -m "Demo: Peluquería Marta" && git push -u origin local/peluqueria-marta
+git add -A && git commit -m "Web: Peluquería Marta" && git push -u origin local/peluqueria-marta
 ```
 
-### Pasar una demo a web definitiva
+### Dominio propio
 
-En su `datos.json`: `"demo": false` y `"dominio": "https://sudominio.es"`. Así la web se indexa en Google y se generan `robots.txt`, `sitemap.xml` y la URL canónica.
+Cada web se publica ya finalizada e indexable en su dirección de Cloudflare (URL canónica, `robots.txt` y `sitemap.xml` incluidos). Si el cliente tiene dominio propio, se añade `"dominio": "https://sudominio.es"` a su `datos.json`.
 
-## Demos y Google
-
-Mientras `"demo"` no sea `false`, la web lleva `noindex` (en la página y en la cabecera `X-Robots-Tag`), así que **Google no la indexa**. Todo el SEO (títulos, descripción, datos estructurados) ya va preparado para cuando sea definitiva.
+Los ejemplos de `ejemplos/` llevan `"demo": true`, que marca la página como `noindex` para que Google no los indexe.
 
 ## Sectores (`"tipo"`)
 
@@ -84,7 +82,7 @@ El botón principal abre WhatsApp con un mensaje ya escrito ("Hola, quería pedi
 | `fotos` | galería; la primera sale más grande | `["fotos/1.jpg", "fotos/2.jpg"]` |
 | `redes` | `{instagram, facebook, tiktok…}` | |
 | `tituloSeo`, `metaDescripcion` | forzar título o descripción de Google | |
-| `demo` | `false` = web definitiva e indexable | |
+| `demo` | `true` = ejemplo, no se indexa en Google (solo para `ejemplos/`) | |
 | `dominio` | dominio definitivo | `"https://estudiomarta.es"` |
 
 \* obligatorio. Los campos vacíos no se muestran.
@@ -93,7 +91,7 @@ Todas las imágenes aceptan `"ruta.jpg"` o `{ "src": "ruta.jpg", "alt": "descrip
 
 ## Fotos
 
-Cada demo lleva fotos: portada, "Sobre…", una por grupo de servicios y galería (4–6).
+Cada web lleva fotos: portada, "Sobre…", una por grupo de servicios y galería (4–6).
 
 1. **Del propio local** (Google Maps, Instagram, web): lo mejor, pero hay que conseguirlas a mano.
 2. **De bancos de fotos libres**: el workflow **Buscar fotos** (pestaña Actions → Buscar fotos → Run workflow) descarga candidatas a la rama `fotos-candidatas`, en `<local>/<búsqueda>/`, con `creditos.json`. Se eligen las buenas, se copian a `locales/<nombre>/fotos/` con nombres descriptivos (`fisioterapia-catarroja.jpg`) y se apuntan en `locales/<nombre>/fotos/CREDITOS.md`.
