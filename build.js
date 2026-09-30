@@ -149,7 +149,7 @@ function pagina(d, url) {
   ].filter(Boolean).join("\n      ");
 
   const valoracion = d.valoracion
-    ? `<p class="rating"><span aria-hidden="true">${estrellas(d.valoracion)}</span> ${esc(d.valoracion)}${d.numResenas ? ` · ${esc(d.numResenas)} reseñas en Google` : ""}</p>`
+    ? `<p class="rating"><span aria-hidden="true">${estrellas(d.valoracion)}</span> ${Number(d.valoracion).toFixed(1).replace(".", ",")}${d.numResenas ? ` · ${esc(d.numResenas)} reseñas en Google` : ""}</p>`
     : "";
 
   const servicios = (d.servicios || []).length
