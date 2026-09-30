@@ -9,7 +9,14 @@
   "eslogan": "Fisioterapia, osteopatía y pilates terapéutico con un trato cercano y personalizado",
   "descripcion": "En Clínica Teràpies trabajamos profesionales de distintas especialidades en equipo para tratar cada caso de forma completa. Combinamos fisioterapia, osteopatía, suelo pélvico y ejercicio terapéutico para que te recuperes de tus lesiones, alivies el dolor y vuelvas a moverte con confianza. Cada tratamiento empieza con una valoración y se adapta a ti.",
   "color": "#2b6f6a",
-
+  "portada": {
+    "src": "fotos/fisioterapia-catarroja-portada.jpg",
+    "alt": "Tratamiento manual de fisioterapia y osteopatía en Clínica Teràpies, Catarroja"
+  },
+  "imagenSobre": {
+    "src": "fotos/fisioterapeuta-estiramiento-paciente.jpg",
+    "alt": "Profesional de Clínica Teràpies guiando un estiramiento a un paciente"
+  },
   "telefono": "656 85 00 88",
   "whatsapp": "34656850088",
   "direccion": "Carrer Cristòfol Aguado, 1",
@@ -19,54 +26,151 @@
   "lng": -0.403187,
   "googleMaps": "",
   "zonaHoraria": "Europe/Madrid",
-
-  "valoracion": 5.0,
+  "valoracion": 5,
   "numResenas": 52,
-
   "horario": {
-    "lunes": ["09:15-20:00"],
-    "martes": ["09:15-20:00"],
-    "miercoles": ["09:15-20:00"],
-    "jueves": ["09:15-20:00"],
-    "viernes": ["09:15-20:00"],
+    "lunes": [
+      "09:15-20:00"
+    ],
+    "martes": [
+      "09:15-20:00"
+    ],
+    "miercoles": [
+      "09:15-20:00"
+    ],
+    "jueves": [
+      "09:15-20:00"
+    ],
+    "viernes": [
+      "09:15-20:00"
+    ],
     "sabado": [],
     "domingo": []
   },
-
   "tituloServicios": "Tratamientos",
   "servicios": [
-    { "grupo": "Fisioterapia", "items": [
-      { "nombre": "Fisioterapia y masaje terapéutico", "detalle": "Contracturas, dolor de espalda y cuello, sobrecargas y lesiones musculares" },
-      { "nombre": "Rehabilitación de lesiones", "detalle": "Lesiones musculares, óseas, de ligamentos y articulaciones, y recuperación después de una operación" },
-      { "nombre": "Fisioterapia neurológica", "detalle": "Tratamiento y rehabilitación de pacientes con afecciones neurológicas" }
-    ]},
-    { "grupo": "Osteopatía", "items": [
-      { "nombre": "Osteopatía integral", "detalle": "Tratamiento manual del cuerpo en su conjunto para encontrar el origen del dolor" },
-      { "nombre": "Osteopatía pediátrica", "detalle": "Tratamiento suave y adaptado para bebés y niños" },
-      { "nombre": "Osteopatía deportiva", "detalle": "Prevención y recuperación de lesiones en deportistas" }
-    ]},
-    { "grupo": "Salud de la mujer", "items": [
-      { "nombre": "Suelo pélvico", "detalle": "Valoración y tratamiento de pérdidas de orina, dolor pélvico y recuperación del suelo pélvico" },
-      { "nombre": "Clases de embarazo y postparto", "detalle": "Ejercicio en grupo para prepararte durante el embarazo y recuperarte después del parto" }
-    ]},
-    { "grupo": "Ejercicio terapéutico", "items": [
-      { "nombre": "Pilates terapéutico", "detalle": "En grupos reducidos y con valoración inicial, para dolor de espalda, lesiones o después de una operación" },
-      { "nombre": "Ejercicio funcional", "detalle": "Entrenamiento guiado para ganar fuerza y moverte mejor en tu día a día" }
-    ]}
+    {
+      "grupo": "Fisioterapia",
+      "imagen": {
+        "src": "fotos/rehabilitacion-lesiones-catarroja.jpg",
+        "alt": "Ejercicio de rehabilitación de lesiones en sala de fisioterapia"
+      },
+      "items": [
+        {
+          "nombre": "Fisioterapia y masaje terapéutico",
+          "detalle": "Contracturas, dolor de espalda y cuello, sobrecargas y lesiones musculares"
+        },
+        {
+          "nombre": "Rehabilitación de lesiones",
+          "detalle": "Lesiones musculares, óseas, de ligamentos y articulaciones, y recuperación después de una operación"
+        },
+        {
+          "nombre": "Fisioterapia neurológica",
+          "detalle": "Tratamiento y rehabilitación de pacientes con afecciones neurológicas"
+        }
+      ]
+    },
+    {
+      "grupo": "Osteopatía",
+      "imagen": {
+        "src": "fotos/osteopatia-catarroja.jpg",
+        "alt": "Osteópata tratando la zona cervical y la espalda"
+      },
+      "items": [
+        {
+          "nombre": "Osteopatía integral",
+          "detalle": "Tratamiento manual del cuerpo en su conjunto para encontrar el origen del dolor"
+        },
+        {
+          "nombre": "Osteopatía pediátrica",
+          "detalle": "Tratamiento suave y adaptado para bebés y niños"
+        },
+        {
+          "nombre": "Osteopatía deportiva",
+          "detalle": "Prevención y recuperación de lesiones en deportistas"
+        }
+      ]
+    },
+    {
+      "grupo": "Salud de la mujer",
+      "imagen": {
+        "src": "fotos/ejercicio-embarazo-postparto.jpg",
+        "alt": "Mujer embarazada haciendo ejercicio de equilibrio"
+      },
+      "items": [
+        {
+          "nombre": "Suelo pélvico",
+          "detalle": "Valoración y tratamiento de pérdidas de orina, dolor pélvico y recuperación del suelo pélvico"
+        },
+        {
+          "nombre": "Clases de embarazo y postparto",
+          "detalle": "Ejercicio en grupo para prepararte durante el embarazo y recuperarte después del parto"
+        }
+      ]
+    },
+    {
+      "grupo": "Ejercicio terapéutico",
+      "imagen": {
+        "src": "fotos/pilates-terapeutico-grupo-reducido.jpg",
+        "alt": "Clase de ejercicio terapéutico en grupo reducido"
+      },
+      "items": [
+        {
+          "nombre": "Pilates terapéutico",
+          "detalle": "En grupos reducidos y con valoración inicial, para dolor de espalda, lesiones o después de una operación"
+        },
+        {
+          "nombre": "Ejercicio funcional",
+          "detalle": "Entrenamiento guiado para ganar fuerza y moverte mejor en tu día a día"
+        }
+      ]
+    }
   ],
-
   "resenas": [],
-
   "preguntas": [
-    { "p": "¿Cómo pido cita?", "r": "Escríbenos por WhatsApp o llámanos al 656 85 00 88 y te buscamos un hueco. Atendemos de lunes a viernes de 9:15 a 20:00." },
-    { "p": "¿Puedo hacer pilates si tengo dolor de espalda o una lesión?", "r": "Sí. El pilates terapéutico está pensado precisamente para eso. Antes de empezar hacemos una valoración inicial y adaptamos los ejercicios a tu caso, en grupos reducidos." },
-    { "p": "¿Tratáis a bebés y niños?", "r": "Sí, contamos con osteopatía pediátrica, un tratamiento manual suave y adaptado a cada edad." },
-    { "p": "¿Qué es la fisioterapia de suelo pélvico?", "r": "Es la especialidad que valora y trata los músculos del suelo pélvico. Ayuda en casos de pérdidas de orina, dolor pélvico y en la recuperación después del embarazo y el parto." },
-    { "p": "¿Dónde estáis?", "r": "En el Carrer Cristòfol Aguado, 1, en Catarroja (Valencia), código postal 46470." }
+    {
+      "p": "¿Cómo pido cita?",
+      "r": "Escríbenos por WhatsApp o llámanos al 656 85 00 88 y te buscamos un hueco. Atendemos de lunes a viernes de 9:15 a 20:00."
+    },
+    {
+      "p": "¿Puedo hacer pilates si tengo dolor de espalda o una lesión?",
+      "r": "Sí. El pilates terapéutico está pensado precisamente para eso. Antes de empezar hacemos una valoración inicial y adaptamos los ejercicios a tu caso, en grupos reducidos."
+    },
+    {
+      "p": "¿Tratáis a bebés y niños?",
+      "r": "Sí, contamos con osteopatía pediátrica, un tratamiento manual suave y adaptado a cada edad."
+    },
+    {
+      "p": "¿Qué es la fisioterapia de suelo pélvico?",
+      "r": "Es la especialidad que valora y trata los músculos del suelo pélvico. Ayuda en casos de pérdidas de orina, dolor pélvico y en la recuperación después del embarazo y el parto."
+    },
+    {
+      "p": "¿Dónde estáis?",
+      "r": "En el Carrer Cristòfol Aguado, 1, en Catarroja (Valencia), código postal 46470."
+    }
   ],
-
-  "fotos": [],
-
+  "fotos": [
+    {
+      "src": "fotos/masaje-terapeutico.jpg",
+      "alt": "Masaje terapéutico de cuello y cabeza"
+    },
+    {
+      "src": "fotos/fitballs-sala-ejercicio.jpg",
+      "alt": "Pelotas de ejercicio en la sala de fisioterapia"
+    },
+    {
+      "src": "fotos/estiramientos-personas-mayores.jpg",
+      "alt": "Estiramientos para personas mayores"
+    },
+    {
+      "src": "fotos/salud-de-la-mujer-embarazo.jpg",
+      "alt": "Fisioterapia y salud de la mujer durante el embarazo"
+    },
+    {
+      "src": "fotos/estiramiento-esterilla.jpg",
+      "alt": "Estiramiento de espalda sobre esterilla"
+    }
+  ],
   "redes": {
     "instagram": "https://www.instagram.com/clinica_terapies/",
     "facebook": "https://www.facebook.com/clinicaterapies/"
