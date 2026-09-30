@@ -96,8 +96,8 @@ Todas las imágenes aceptan `"ruta.jpg"` o `{ "src": "ruta.jpg", "alt": "descrip
 Cada demo lleva fotos: portada, "Sobre…", una por grupo de servicios y galería (4–6).
 
 1. **Del propio local** (Google Maps, Instagram, web): lo mejor, pero hay que conseguirlas a mano.
-2. **De Pexels** (gratis, uso comercial, sin atribución obligatoria): el workflow **Buscar fotos** (pestaña Actions → Buscar fotos → Run workflow) descarga candidatas a la rama `fotos-candidatas`, en `<local>/<búsqueda>/`, con `creditos.json`. Se eligen las buenas, se copian a `locales/<nombre>/fotos/` con nombres descriptivos (`fisioterapia-catarroja.jpg`) y se apuntan en `locales/<nombre>/fotos/CREDITOS.md`.
-   Necesita el secreto `PEXELS_API_KEY` (clave gratuita en https://www.pexels.com/api/).
+2. **De bancos de fotos libres**: el workflow **Buscar fotos** (pestaña Actions → Buscar fotos → Run workflow) descarga candidatas a la rama `fotos-candidatas`, en `<local>/<búsqueda>/`, con `creditos.json`. Se eligen las buenas, se copian a `locales/<nombre>/fotos/` con nombres descriptivos (`fisioterapia-catarroja.jpg`) y se apuntan en `locales/<nombre>/fotos/CREDITOS.md`.
+   Por defecto busca en **Openverse** (sin clave), solo fotos de dominio público (CC0/PDM): uso comercial y sin atribución obligatoria. También admite Pixabay o Pexels si se añade el secreto `PIXABAY_API_KEY` o `PEXELS_API_KEY`.
 
 ## Probar en local
 
