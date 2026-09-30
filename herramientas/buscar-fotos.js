@@ -27,9 +27,17 @@ async function json(url, headers = {}) {
 const FUENTES = {
   async openverse(q) {
     const aspecto = { landscape: "wide", portrait: "tall", square: "square" }[orientacion] || "wide";
-    const u = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&license=cc0,pdm&category=photograph&aspect_ratio=${aspecto}&size=large&page_size=${n}`;
-    const { results = [] } = await json(u);
-    return results.map((p) => ({
+    // Openverse busca por título y etiquetas: si con todos los filtros hay pocas fotos, se relajan.
+    const base = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&license=cc0,pdm&category=photograph&page_size=20`;
+    let results = [];
+    for (const filtros of [`&aspect_ratio=${aspecto}&size=large`, `&aspect_ratio=${aspecto}`, ""]) {
+      const vistos = new Set(results.map((r) => r.id));
+      results = results.concat(((await json(base + filtros)).results || []).filter((r) => !vistos.has(r.id)));
+      if (results.length >= n) break;
+    }
+    // Descartar fotos pequeñas o muy verticales si se pidió horizontal
+    results = results.filter((r) => !r.width || (r.width >= 1000 && (orientacion !== "landscape" || r.width >= r.height)));
+    return results.slice(0, n).map((p) => ({
       id: `${p.source}-${p.id.slice(0, 8)}`, url: p.url, autor: p.creator || "desconocido", pagina: p.foreign_landing_url,
       licencia: `${p.license.toUpperCase()} (${p.source})`, alt: p.title || "", ancho: p.width, alto: p.height,
     }));
