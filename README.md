@@ -95,10 +95,11 @@ npx serve dist
 
 ## Publicar con Cloudflare (una sola vez)
 
-El repo ya incluye `wrangler.jsonc`, que le dice a Cloudflare cómo generar y publicar la web.
+La publicación la hace GitHub Actions (`.github/workflows/publicar.yml`) con cada `git push`:
+- `main` → web principal (escaparate de ejemplos).
+- Cualquier otra rama → su propia URL de vista previa, que aparece en la pull request ("View deployment") y en el resumen de la ejecución en la pestaña **Actions**.
 
-1. En https://dash.cloudflare.com: **Workers & Pages → Create → Import a repository** y elige este repositorio.
-2. Rama de producción: `main`. Comando de deploy: `npx wrangler deploy` (el que viene por defecto). El build ya lo hace `wrangler.jsonc`.
-3. En **Settings → Build → Branch control**, activa **Builds for non-production branches**.
-
-Desde entonces, cada `git push` a una rama publica o actualiza su demo sola. La dirección de cada rama aparece en la pestaña **Deployments** del Worker y en la pull request de GitHub.
+Configuración necesaria:
+1. En Cloudflare, un token de API creado con la plantilla **"Edit Cloudflare Workers"**.
+2. En GitHub, **Settings → Secrets and variables → Actions → New repository secret**, con el nombre `CLOUDFLARE_API_TOKEN`.
+3. En el Worker `webs-locales` de Cloudflare, **Settings → Build → Disconnect** (las builds del panel no hacen falta).
