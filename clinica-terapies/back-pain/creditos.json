@@ -1,0 +1,29 @@
+{
+  "busqueda": "back pain",
+  "fuente": "openverse",
+  "orientacion": "landscape",
+  "fotos": [
+    {
+      "archivo": "01-rawpixel-00934173.jpg",
+      "id": "rawpixel-00934173",
+      "url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDI0LTAyL2xyL3djcGVqdDVmN24taW1hZ2UuanBn.jpg",
+      "autor": "desconocido",
+      "pagina": "https://www.rawpixel.com/image/13963361/carters-backache-plasters-for-every-ache-pain-puzzle-card",
+      "licencia": "CC0 (rawpixel)",
+      "alt": "Carter's Backache Plasters every ache",
+      "ancho": 2175,
+      "alto": 1432
+    },
+    {
+      "archivo": "02-rawpixel-435598f4.jpg",
+      "id": "rawpixel-435598f4",
+      "url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvZmlsZXMvd2Vic2l0ZS8yMDI0LTAyL3djbnFod3Z4amotaW1hZ2UuanBn.jpg",
+      "autor": "desconocido",
+      "pagina": "https://www.rawpixel.com/image/13997931/image-paper-public-domain-poster",
+      "licencia": "CC0 (rawpixel)",
+      "alt": "Oh! My poor back' dran'",
+      "ancho": 1971,
+      "alto": 1409
+    }
+  ]
+}

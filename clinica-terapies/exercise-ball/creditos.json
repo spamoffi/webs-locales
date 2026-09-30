@@ -1,0 +1,117 @@
+{
+  "busqueda": "exercise ball",
+  "fuente": "openverse",
+  "orientacion": "landscape",
+  "fotos": [
+    {
+      "archivo": "01-stocksnap-5cae03a8.jpg",
+      "id": "stocksnap-5cae03a8",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/LHHL7FKKVD.jpg",
+      "autor": "Michal Jarmoluk",
+      "pagina": "https://stocksnap.io/photo/soccer-ball-LHHL7FKKVD",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Soccer Ball",
+      "ancho": 3000,
+      "alto": 2000
+    },
+    {
+      "archivo": "02-stocksnap-8e56b2a6.jpg",
+      "id": "stocksnap-8e56b2a6",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/HWDNFMZHRP.jpg",
+      "autor": "Elliott Chau",
+      "pagina": "https://stocksnap.io/photo/sports-ball-HWDNFMZHRP",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Sports Ball",
+      "ancho": 4190,
+      "alto": 2757
+    },
+    {
+      "archivo": "03-stocksnap-7857d5a2.jpg",
+      "id": "stocksnap-7857d5a2",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/FN9W4V6TK5.jpg",
+      "autor": "Michal Jarmoluk",
+      "pagina": "https://stocksnap.io/photo/soccer-ball-FN9W4V6TK5",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Soccer Ball",
+      "ancho": 3000,
+      "alto": 2000
+    },
+    {
+      "archivo": "04-stocksnap-9675598e.jpg",
+      "id": "stocksnap-9675598e",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/1Q2U0J72YG.jpg",
+      "autor": "Michal Jarmoluk",
+      "pagina": "https://stocksnap.io/photo/soccer-ball-1Q2U0J72YG",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Soccer Ball",
+      "ancho": 3000,
+      "alto": 1999
+    },
+    {
+      "archivo": "05-stocksnap-0274fdab.jpg",
+      "id": "stocksnap-0274fdab",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/M4TKS2J4JW.jpg",
+      "autor": "Sabri Tuzcu",
+      "pagina": "https://stocksnap.io/photo/basketball-ball-M4TKS2J4JW",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Basketball Ball",
+      "ancho": 4928,
+      "alto": 3264
+    },
+    {
+      "archivo": "06-stocksnap-18af8982.jpg",
+      "id": "stocksnap-18af8982",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/ODYD68RHJN.jpg",
+      "autor": "Filip Mroz",
+      "pagina": "https://stocksnap.io/photo/basketball-ball-ODYD68RHJN",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Basketball Ball",
+      "ancho": 3527,
+      "alto": 1984
+    },
+    {
+      "archivo": "07-stocksnap-ccdc6b6d.jpg",
+      "id": "stocksnap-ccdc6b6d",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/ETVCJUBHZ4.jpg",
+      "autor": "Matt Moloney",
+      "pagina": "https://stocksnap.io/photo/basket-ball-ETVCJUBHZ4",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Basket Ball",
+      "ancho": 6000,
+      "alto": 4000
+    },
+    {
+      "archivo": "08-stocksnap-45fa22e3.jpg",
+      "id": "stocksnap-45fa22e3",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/P8OPJNWLK8.jpg",
+      "autor": "Kristin Hardwick",
+      "pagina": "https://stocksnap.io/photo/basketball-game-P8OPJNWLK8",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Basketball Game",
+      "ancho": 4304,
+      "alto": 3577
+    },
+    {
+      "archivo": "09-rawpixel-5aaadc87.jpg",
+      "id": "rawpixel-5aaadc87",
+      "url": "https://images.rawpixel.com/editor_1024/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvcHgxMzc2NTQ0LWltYWdlLWt3dnkwZWxqLWt6aHczNzl4LmpwZw.jpg",
+      "autor": "desconocido",
+      "pagina": "https://www.rawpixel.com/image/5924275/photo-image-public-domain-yoga-free",
+      "licencia": "CC0 (rawpixel)",
+      "alt": "Free swiss balls image",
+      "ancho": 6000,
+      "alto": 4000
+    },
+    {
+      "archivo": "10-rawpixel-dbbf486f.jpg",
+      "id": "rawpixel-dbbf486f",
+      "url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL3B4NzIwMTY0LWltYWdlLWt3dnYydGFmLmpwZw.jpg",
+      "autor": "desconocido",
+      "pagina": "https://www.rawpixel.com/image/5905923/photo-image-public-domain-free-game",
+      "licencia": "CC0 (rawpixel)",
+      "alt": "Free basketball hoop image",
+      "ancho": 4288,
+      "alto": 2848
+    }
+  ]
+}
