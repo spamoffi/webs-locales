@@ -81,6 +81,11 @@ El botón principal abre WhatsApp con un mensaje ya escrito ("Hola, quería pedi
 | `servicios[].imagen` | foto de cada grupo de servicios (o de cada servicio) | `"fotos/osteopatia.jpg"` |
 | `fotos` | galería; la primera sale más grande | `["fotos/1.jpg", "fotos/2.jpg"]` |
 | `redes` | `{instagram, facebook, tiktok…}` | |
+| `introServicios` | frase bajo el título de servicios | |
+| `puntosFuertes` | lista con ✓ en "Sobre nosotros" (por defecto, los grupos de servicios) | `["Primera valoración", "Grupos reducidos"]` |
+| `destacados` | franja de datos clave bajo la portada (por defecto: nota, horario, cita y dirección) | `[{ "icono": "check", "titulo": "…", "texto": "…" }]` |
+| `tituloSobre`, `tituloGaleria`, `tituloServicios2` | cambiar títulos de sección | |
+| `textoBanda`, `subtextoBanda` | textos de la banda final de cita | |
 | `tituloSeo`, `metaDescripcion` | forzar título o descripción de Google | |
 | `demo` | `true` = ejemplo, no se indexa en Google (solo para `ejemplos/`) | |
 | `dominio` | dominio definitivo | `"https://estudiomarta.es"` |
