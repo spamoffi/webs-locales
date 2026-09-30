@@ -1,0 +1,10 @@
+// Cloudflare Workers (solo archivos estáticos). Cada rama genera su web con build.js
+// y Cloudflare la publica en su propia URL de vista previa.
+{
+  "name": "webs-locales",
+  "compatibility_date": "2026-09-01",
+  "build": { "command": "node build.js" },
+  "assets": { "directory": "./dist" },
+  "preview_urls": true,
+  "workers_dev": true
+}

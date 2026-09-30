@@ -1,13 +1,14 @@
 # Webs de locales
 
-Webs de una sola página para negocios de Google Maps. Sin servidor, sin base de datos, sin plugins: **no necesitan mantenimiento**. Se publican gratis en Cloudflare Pages.
+Webs de una sola página para negocios de Google Maps. Sin servidor, sin base de datos, sin plugins: **no necesitan mantenimiento**. Se publican gratis en Cloudflare (Workers, solo archivos estáticos).
 
 ## Cómo se trabaja
 
 - **`main`** solo tiene la plantilla (`build.js`) y los ejemplos (`ejemplos/`). Su web publicada es un escaparate con los ejemplos.
 - **Cada local tiene su propia rama `local/<nombre>`**, creada desde `main`, con una única carpeta `locales/<nombre>/datos.json`.
-- Cloudflare Pages publica cada rama automáticamente en su propia dirección, que es el enlace de la demo para el cliente:
-  `local/peluqueria-marta` → `https://local-peluqueria-marta.webs-locales.pages.dev`
+- Cloudflare publica cada rama automáticamente en su propia dirección, que es el enlace de la demo para el cliente:
+  `local/peluqueria-marta` → `https://local-peluqueria-marta-webs-locales.<tu-subdominio>.workers.dev`
+- **Las ramas `local/...` nunca se fusionan en `main`.** Si se abre una pull request de una demo, sirve solo para revisarla.
 
 ### Crear la demo de un local
 
@@ -92,11 +93,12 @@ node build.js
 npx serve dist
 ```
 
-## Publicar con Cloudflare Pages (una sola vez)
+## Publicar con Cloudflare (una sola vez)
 
-1. Crea una cuenta en https://dash.cloudflare.com
-2. **Workers & Pages → Create → Pages → Connect to Git** y elige este repositorio.
-3. Rama de producción: `main`. Comando de build: `node build.js`. Carpeta de salida: `dist`.
-4. En **Settings → Builds → Branch control**, deja activados los despliegues de todas las ramas (preview).
+El repo ya incluye `wrangler.jsonc`, que le dice a Cloudflare cómo generar y publicar la web.
 
-Desde entonces, cada `git push` a una rama publica o actualiza su demo sola.
+1. En https://dash.cloudflare.com: **Workers & Pages → Create → Import a repository** y elige este repositorio.
+2. Rama de producción: `main`. Comando de deploy: `npx wrangler deploy` (el que viene por defecto). El build ya lo hace `wrangler.jsonc`.
+3. En **Settings → Build → Branch control**, activa **Builds for non-production branches**.
+
+Desde entonces, cada `git push` a una rama publica o actualiza su demo sola. La dirección de cada rama aparece en la pestaña **Deployments** del Worker y en la pull request de GitHub.
