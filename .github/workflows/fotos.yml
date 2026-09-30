@@ -1,0 +1,66 @@
+name: Buscar fotos
+
+# Descarga fotos candidatas de Pexels a la rama "fotos-candidatas" para elegirlas.
+# Necesita el secreto PEXELS_API_KEY (clave gratuita en https://www.pexels.com/api/).
+on:
+  workflow_dispatch:
+    inputs:
+      local:
+        description: "Carpeta del local (ej. clinica-terapies)"
+        required: true
+      busquedas:
+        description: "Búsquedas separadas por punto y coma (mejor en inglés)"
+        required: true
+      cantidad:
+        description: "Fotos por búsqueda"
+        default: "6"
+      orientacion:
+        description: "landscape, portrait o square"
+        default: "landscape"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fotos-candidatas
+
+jobs:
+  buscar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          path: plantilla
+      - name: Preparar rama fotos-candidatas
+        run: |
+          git clone --quiet "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" fotos
+          cd fotos
+          if git ls-remote --exit-code --heads origin fotos-candidatas >/dev/null; then
+            git checkout --quiet fotos-candidatas
+          else
+            git checkout --quiet --orphan fotos-candidatas && git rm -rfq . && echo "Fotos candidatas para las demos (no es una web)." > README.md
+          fi
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Buscar y descargar
+        env:
+          PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+          LOCAL: ${{ inputs.local }}
+          BUSQUEDAS: ${{ inputs.busquedas }}
+          CANTIDAD: ${{ inputs.cantidad }}
+          ORIENTACION: ${{ inputs.orientacion }}
+        run: |
+          case "$LOCAL" in *[!a-z0-9-]*|"") echo "Nombre de local inválido"; exit 1;; esac
+          node plantilla/herramientas/buscar-fotos.js "fotos/$LOCAL" "$BUSQUEDAS" "$CANTIDAD" "$ORIENTACION"
+      - name: Guardar en la rama
+        env:
+          MENSAJE: "Fotos candidatas: ${{ inputs.local }}"
+        run: |
+          cd fotos
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit --quiet -m "$MENSAJE" || { echo "Sin cambios"; exit 0; }
+          git push --quiet origin fotos-candidatas

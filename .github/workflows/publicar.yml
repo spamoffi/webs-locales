@@ -4,6 +4,7 @@ name: Publicar en Cloudflare
 # cualquier otra rama -> URL de vista previa propia: https://<rama>-webs-locales.<subdominio>.workers.dev
 on:
   push:
+    branches-ignore: [fotos-candidatas]
   workflow_dispatch:
 
 concurrency:

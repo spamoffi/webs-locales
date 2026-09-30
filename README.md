@@ -78,13 +78,26 @@ El botón principal abre WhatsApp con un mensaje ya escrito ("Hola, quería pedi
 | `servicios` | lista `{nombre, detalle, precio}` o grupos `{grupo, items: [...]}` | |
 | `resenas` | `{autor, estrellas, texto}` copiadas de Google | |
 | `preguntas` | preguntas frecuentes `{p, r}` (Google puede mostrarlas) | |
-| `fotos` | rutas dentro de la carpeta del local o URLs | `["fotos/1.jpg"]` |
+| `portada` | foto grande de cabecera (horizontal) | `"fotos/portada.jpg"` |
+| `imagenSobre` | foto junto a "Sobre…" | `"fotos/equipo.jpg"` |
+| `servicios[].imagen` | foto de cada grupo de servicios (o de cada servicio) | `"fotos/osteopatia.jpg"` |
+| `fotos` | galería; la primera sale más grande | `["fotos/1.jpg", "fotos/2.jpg"]` |
 | `redes` | `{instagram, facebook, tiktok…}` | |
 | `tituloSeo`, `metaDescripcion` | forzar título o descripción de Google | |
 | `demo` | `false` = web definitiva e indexable | |
 | `dominio` | dominio definitivo | `"https://estudiomarta.es"` |
 
 \* obligatorio. Los campos vacíos no se muestran.
+
+Todas las imágenes aceptan `"ruta.jpg"` o `{ "src": "ruta.jpg", "alt": "descripción para Google" }`. Van dentro de la carpeta del local (`locales/<nombre>/fotos/`) y `build.js` avisa si falta alguna.
+
+## Fotos
+
+Cada demo lleva fotos: portada, "Sobre…", una por grupo de servicios y galería (4–6).
+
+1. **Del propio local** (Google Maps, Instagram, web): lo mejor, pero hay que conseguirlas a mano.
+2. **De Pexels** (gratis, uso comercial, sin atribución obligatoria): el workflow **Buscar fotos** (pestaña Actions → Buscar fotos → Run workflow) descarga candidatas a la rama `fotos-candidatas`, en `<local>/<búsqueda>/`, con `creditos.json`. Se eligen las buenas, se copian a `locales/<nombre>/fotos/` con nombres descriptivos (`fisioterapia-catarroja.jpg`) y se apuntan en `locales/<nombre>/fotos/CREDITOS.md`.
+   Necesita el secreto `PEXELS_API_KEY` (clave gratuita en https://www.pexels.com/api/).
 
 ## Probar en local
 

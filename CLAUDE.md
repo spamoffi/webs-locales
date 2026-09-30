@@ -6,6 +6,8 @@
 4. Las webs son **demos** para enseñar al cliente: `"demo": true` (noindex). Solo se pone `false` cuando el cliente la contrata y tiene dominio.
 5. Hosting: Cloudflare Workers (estático, configurado en `wrangler.jsonc`) publica cada rama en `https://<rama-con-guiones>-webs-locales.<subdominio>.workers.dev`. Las ramas `local/...` nunca se fusionan en `main`.
 
+6. **Toda demo lleva fotos** (portada, "Sobre…", una por grupo de servicios y galería de 4–6), con `alt` descriptivo. Prioridad: fotos del propio local si el usuario las da; si no, Pexels con el workflow **Buscar fotos** (búsquedas en inglés), revisando cada candidata antes de usarla: que encaje con el negocio, sin textos ni marcas, y coherente entre sí. Créditos en `locales/<nombre>/fotos/CREDITOS.md`.
+
 Antes de subir una demo: `node build.js` sin errores y revisar la web a 390px y 1280px, en modo claro y oscuro.
 Las mejoras de la plantilla se hacen en `main`. Los datos de un local, solo en su rama.
 El README tiene la lista completa de campos de `datos.json`.
