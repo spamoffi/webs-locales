@@ -62,9 +62,22 @@ function validar(d, slug) {
   }
 }
 
+// Imagen: "ruta.jpg" o { "src": "ruta.jpg", "alt": "texto" }
+const foto = (x, altPorDefecto = "") => (!x ? null : typeof x === "string" ? { src: x, alt: altPorDefecto } : { src: x.src, alt: x.alt || altPorDefecto });
+
+// Todas las imágenes que usa un local (para validar que existen y para Google)
+function todasLasFotos(d) {
+  const lista = [d.portada, d.imagenSobre, ...(d.fotos || [])];
+  for (const s of d.servicios || []) {
+    lista.push(s.imagen);
+    for (const i of s.items || []) lista.push(i.imagen);
+  }
+  return lista.map((x) => foto(x)).filter(Boolean);
+}
+
 // Servicios: lista simple [{nombre, detalle, precio}] o agrupada [{grupo, items: [...]}]
 const gruposServicios = (lista = []) =>
-  lista.some((s) => s.items) ? lista.map((g) => ({ grupo: g.grupo, items: g.items || [] })) : [{ grupo: "", items: lista }];
+  lista.some((s) => s.items) ? lista.map((g) => ({ grupo: g.grupo, imagen: g.imagen, items: g.items || [] })) : [{ grupo: "", items: lista }];
 
 function schemas(d, sector, url) {
   const horas = [];
@@ -74,7 +87,10 @@ function schemas(d, sector, url) {
       horas.push({ "@type": "OpeningHoursSpecification", dayOfWeek: DIAS_SCHEMA[i], opens, closes });
     }
   });
-  const imagenes = (d.fotos || []).map((f) => (esAbsoluta(f) ? f : url ? url + f : null)).filter(Boolean);
+  const imagenes = [d.portada, d.imagenSobre, ...(d.fotos || [])]
+    .map((x) => foto(x)?.src)
+    .map((f) => (esAbsoluta(f) ? f : f && url ? url + f : null))
+    .filter(Boolean);
   const negocio = {
     "@context": "https://schema.org",
     "@type": sector.schema,
@@ -133,7 +149,15 @@ function pagina(d, url) {
   const subtitulo = [d.categoria, lugar && `en ${lugar}`].filter(Boolean).join(" ");
   const titulo = d.tituloSeo || [d.nombre, subtitulo].filter(Boolean).join(" | ");
   const descMeta = d.metaDescripcion || [d.eslogan || d.categoria, lugar && `en ${lugar}`, d.direccion].filter(Boolean).join(". ").slice(0, 160);
-  const ogImagen = (d.fotos || []).map((f) => (esAbsoluta(f) ? f : url ? url + f : null)).find(Boolean);
+  const ogImagen = [d.portada, ...(d.fotos || [])]
+    .map((x) => foto(x)?.src)
+    .map((f) => (esAbsoluta(f) ? f : f && url ? url + f : null))
+    .find(Boolean);
+  const altBase = `${d.nombre}${subtitulo ? " – " + subtitulo : ""}`;
+  const portada = foto(d.portada, altBase);
+  const imagenSobre = foto(d.imagenSobre, altBase);
+  const imgTag = (f, extra = "") =>
+    `<img src="${esc(f.src)}" alt="${esc(f.alt)}" loading="lazy" decoding="async"${extra}>`;
 
   // Contacto: acción principal según el sector (enlace de reservas > WhatsApp > teléfono)
   const ctaHref = d.enlaceReserva || (wa && `https://wa.me/${wa}?text=${encodeURIComponent(sector.msg)}`) || (tel && `tel:${tel}`);
@@ -156,14 +180,16 @@ function pagina(d, url) {
     ? `<section id="servicios"><h2>${esc(d.tituloServicios || sector.servicios)}</h2>${gruposServicios(d.servicios)
         .map(
           (g) =>
-            `${g.grupo ? `<h3>${esc(g.grupo)}</h3>` : ""}<ul class="cards">${g.items
+            `<div class="grupo${g.imagen ? " con-imagen" : ""}">${
+              g.imagen ? `<div class="grupo-img">${imgTag(foto(g.imagen, `${g.grupo} en ${d.nombre}`))}</div>` : ""
+            }<div class="grupo-txt">${g.grupo ? `<h3>${esc(g.grupo)}</h3>` : ""}<ul class="cards">${g.items
               .map(
                 (s) =>
-                  `<li><div class="fila"><strong>${esc(s.nombre)}</strong>${s.precio ? `<span class="precio">${esc(s.precio)}</span>` : ""}</div>${
+                  `<li>${s.imagen ? imgTag(foto(s.imagen, `${s.nombre} en ${d.nombre}`), ' class="card-img"') : ""}<div class="fila"><strong>${esc(s.nombre)}</strong>${s.precio ? `<span class="precio">${esc(s.precio)}</span>` : ""}</div>${
                     s.detalle ? `<span>${esc(s.detalle)}</span>` : ""
                   }</li>`
               )
-              .join("")}</ul>`
+              .join("")}</ul></div></div>`
         )
         .join("")}</section>`
     : "";
@@ -174,7 +200,7 @@ function pagina(d, url) {
 
   const fotos = (d.fotos || []).length
     ? `<section><h2>Fotos</h2><div class="fotos">${d.fotos
-        .map((f, i) => `<img src="${esc(f)}" alt="${esc(`${d.nombre}${subtitulo ? " – " + subtitulo : ""} (foto ${i + 1})`)}" loading="lazy">`)
+        .map((f, i) => imgTag(foto(f, `${altBase} (foto ${i + 1})`)))
         .join("")}</div></section>`
     : "";
 
@@ -231,6 +257,7 @@ ${ogImagen ? `<meta property="og:image" content="${esc(ogImagen)}">` : ""}
 <meta name="theme-color" content="${color}">
 <link rel="icon" href="${favicon(d, color)}">
 <link rel="preconnect" href="https://www.google.com">
+${portada ? `<link rel="preload" as="image" href="${esc(portada.src)}" fetchpriority="high">` : ""}
 ${schemas(d, sector, url)}
 <style>
   :root { --c: ${color}; --fg: #1d1d1f; --muted: #5f6368; --bg: #fff; --soft: #f6f5f3; --line: #e5e3df; }
@@ -263,8 +290,31 @@ ${schemas(d, sector, url)}
   th { font-weight: 500; width: 40%; } tr.hoy { font-weight: 700; } tr.hoy th { color: var(--c); }
   .estado { font-size: .8rem; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
   .estado.abierto { background: #d7f5dd; color: #11632a; } .estado.cerrado { background: #fde0e0; color: #8a1c1c; }
-  .fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
-  .fotos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 10px; }
+  header { position: relative; overflow: hidden; }
+  header.con-portada { min-height: min(78vh, 640px); display: flex; align-items: flex-end; padding: 96px 0 48px; }
+  header.con-portada::before { content: ""; position: absolute; inset: 0; z-index: 1;
+    background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.35) 40%, color-mix(in srgb, var(--c) 85%, black) 100%); }
+  header .portada { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  header .wrap { position: relative; z-index: 2; width: 100%; }
+  header.con-portada h1, header.con-portada p { text-shadow: 0 1px 12px rgba(0,0,0,.35); }
+  .sobre.con-imagen { display: grid; gap: 24px; align-items: center; }
+  .sobre img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 18px; }
+  @media (min-width: 760px) { .sobre.con-imagen { grid-template-columns: 1.1fr .9fr; gap: 40px; } }
+  .grupo { margin-top: 20px; }
+  .grupo.con-imagen { display: grid; gap: 16px; }
+  .grupo-img img { width: 100%; height: 100%; min-height: 180px; max-height: 240px; object-fit: cover; border-radius: 14px; display: block; }
+  @media (min-width: 760px) {
+    .grupo.con-imagen { grid-template-columns: 280px 1fr; align-items: stretch; gap: 20px; }
+    .grupo.con-imagen:nth-of-type(even) { grid-template-columns: 1fr 280px; }
+    .grupo.con-imagen:nth-of-type(even) .grupo-img { order: 2; }
+    .grupo-img img { max-height: none; }
+    .grupo.con-imagen .cards { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  }
+  .grupo h3 { margin-top: 0; }
+  .card-img { width: calc(100% + 32px); margin: -16px -16px 12px; aspect-ratio: 16/10; object-fit: cover; border-radius: 14px 14px 0 0; display: block; }
+  .fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .fotos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 12px; display: block; }
+  @media (min-width: 760px) { .fotos img:first-child { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; height: 100%; } }
   details { border-bottom: 1px solid var(--line); padding: 12px 0; } summary { cursor: pointer; font-weight: 600; } details p { margin: 8px 0 0; color: var(--muted); }
   .mapa { width: 100%; height: 340px; border: 0; border-radius: 14px; background: var(--soft); }
   a { color: var(--c); }
@@ -280,7 +330,8 @@ ${schemas(d, sector, url)}
 </style>
 </head>
 <body>
-<header>
+<header${portada ? ' class="con-portada"' : ""}>
+  ${portada ? `<img class="portada" src="${esc(portada.src)}" alt="${esc(portada.alt)}" fetchpriority="high" decoding="async">` : ""}
   <div class="wrap">
     <h1>${esc(d.nombre)}</h1>
     ${subtitulo ? `<p class="sub">${esc(subtitulo)}</p>` : ""}
@@ -292,7 +343,7 @@ ${schemas(d, sector, url)}
   </div>
 </header>
 <main class="wrap">
-  ${d.descripcion ? `<section><h2>Sobre ${esc(d.nombre)}</h2><p>${esc(d.descripcion)}</p></section>` : ""}
+  ${d.descripcion ? `<section class="sobre${imagenSobre ? " con-imagen" : ""}"><div><h2>Sobre ${esc(d.nombre)}</h2><p>${esc(d.descripcion)}</p></div>${imagenSobre ? imgTag(imagenSobre) : ""}</section>` : ""}
   ${servicios}
   ${zonaServicio}
   ${horario}
@@ -385,6 +436,9 @@ function main() {
 
   const enRaiz = lista.length === 1 && !escaparate;
   for (const { slug, dir, d } of lista) {
+    for (const f of todasLasFotos(d)) {
+      if (!esAbsoluta(f.src) && !fs.existsSync(path.join(dir, f.src))) throw new Error(`[${slug}] no existe la imagen "${f.src}"`);
+    }
     const salida = enRaiz ? DIST : path.join(DIST, slug);
     // La URL pública solo se conoce cuando el local tiene dominio propio (web definitiva).
     const url = d.dominio ? d.dominio.replace(/\/?$/, "/") : "";
