@@ -97,7 +97,7 @@ Cada demo lleva fotos: portada, "Sobre…", una por grupo de servicios y galerí
 
 1. **Del propio local** (Google Maps, Instagram, web): lo mejor, pero hay que conseguirlas a mano.
 2. **De bancos de fotos libres**: el workflow **Buscar fotos** (pestaña Actions → Buscar fotos → Run workflow) descarga candidatas a la rama `fotos-candidatas`, en `<local>/<búsqueda>/`, con `creditos.json`. Se eligen las buenas, se copian a `locales/<nombre>/fotos/` con nombres descriptivos (`fisioterapia-catarroja.jpg`) y se apuntan en `locales/<nombre>/fotos/CREDITOS.md`.
-   Por defecto busca en **Openverse** (sin clave), solo fotos de dominio público (CC0/PDM): uso comercial y sin atribución obligatoria. También admite Pixabay o Pexels si se añade el secreto `PIXABAY_API_KEY` o `PEXELS_API_KEY`.
+   Por defecto busca en **Openverse** (sin clave), solo fotos CC0 de bancos fiables (StockSnap, Rawpixel, WordPress, Nappy): uso comercial y sin atribución obligatoria. Se evita Flickr porque hay cuentas que marcan como dominio público fotos ajenas. También admite Pixabay o Pexels si se añade el secreto `PIXABAY_API_KEY` o `PEXELS_API_KEY`.
 
 ## Probar en local
 

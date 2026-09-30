@@ -1,7 +1,7 @@
 name: Buscar fotos
 
 # Descarga fotos candidatas a la rama "fotos-candidatas" para elegirlas.
-# Fuente por defecto: Openverse (sin clave, solo dominio público CC0/PDM).
+# Fuente por defecto: Openverse (sin clave; solo CC0 de StockSnap, Rawpixel, WordPress y Nappy).
 # Opcionales: secretos PIXABAY_API_KEY o PEXELS_API_KEY para usar esas fuentes.
 on:
   workflow_dispatch:

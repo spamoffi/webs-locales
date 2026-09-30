@@ -2,7 +2,7 @@
 // Busca fotos libres y descarga candidatas redimensionadas (1600 px de ancho máx.).
 // Uso: node herramientas/buscar-fotos.js <carpeta-salida> "<búsqueda 1>; <búsqueda 2>" [cantidad] [orientacion] [fuente]
 //   orientacion: landscape | portrait | square
-//   fuente: openverse (por defecto, sin clave; solo dominio público CC0/PDM)
+//   fuente: openverse (por defecto, sin clave; solo CC0 de StockSnap, Rawpixel, WordPress y Nappy)
 //           pixabay (PIXABAY_API_KEY) | pexels (PEXELS_API_KEY)
 // Si "sharp" está instalado se redimensiona y comprime; si no, se guarda tal cual.
 const fs = require("fs");
@@ -28,7 +28,8 @@ const FUENTES = {
   async openverse(q) {
     const aspecto = { landscape: "wide", portrait: "tall", square: "square" }[orientacion] || "wide";
     // Openverse busca por título y etiquetas: si con todos los filtros hay pocas fotos, se relajan.
-    const base = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&license=cc0,pdm&category=photograph&page_size=20`;
+    // Solo bancos con licencia CC0 fiable (en Flickr hay cuentas que marcan como dominio público fotos ajenas)
+    const base = `https://api.openverse.org/v1/images/?q=${encodeURIComponent(q)}&license=cc0&source=stocksnap,rawpixel,wordpress,nappy&category=photograph&page_size=20`;
     let results = [];
     for (const filtros of [`&aspect_ratio=${aspecto}&size=large`, `&aspect_ratio=${aspecto}`, ""]) {
       const vistos = new Set(results.map((r) => r.id));
@@ -63,10 +64,22 @@ const FUENTES = {
   },
 };
 
+// Versiones más grandes que la miniatura que da Openverse (si no existen, se usa la original)
+const variantesGrandes = (url) => [
+  url.replace("/img-thumbs/960w/", "/img-thumbs/2880w/"),
+  url.replace("/img-thumbs/960w/", "/img-thumbs/1920w/"),
+  url.replace("/editor_1024/", "/image_1600/"),
+  url.replace("/editor_1024/", "/image_1300/"),
+  url,
+].filter((u, i, a) => a.indexOf(u) === i);
+
 async function guardar(url, destino) {
-  const r = await fetch(url, { headers: { "User-Agent": "webs-locales/1.0" }, redirect: "follow" });
-  if (!r.ok) throw new Error(`descarga ${r.status}`);
-  const buf = Buffer.from(await r.arrayBuffer());
+  let buf = null;
+  for (const u of variantesGrandes(url)) {
+    const r = await fetch(u, { headers: { "User-Agent": "webs-locales/1.0" }, redirect: "follow" }).catch(() => null);
+    if (r?.ok && (r.headers.get("content-type") || "").startsWith("image/")) { buf = Buffer.from(await r.arrayBuffer()); break; }
+  }
+  if (!buf) throw new Error("descarga fallida");
   if (sharp) {
     await sharp(buf).rotate().resize({ width: 1600, withoutEnlargement: true }).jpeg({ quality: 78, mozjpeg: true }).toFile(destino);
   } else {
