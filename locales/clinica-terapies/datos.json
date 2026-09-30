@@ -7,6 +7,12 @@
   "metaDescripcion": "Clínica de fisioterapia en Catarroja: osteopatía, suelo pélvico, pilates terapéutico y fisioterapia neurológica. 5,0 ★ en Google. Pide cita: 656 85 00 88.",
   "eslogan": "Fisioterapia, osteopatía y pilates terapéutico con un trato cercano y personalizado",
   "descripcion": "En Clínica Teràpies trabajamos profesionales de distintas especialidades en equipo para tratar cada caso de forma completa. Combinamos fisioterapia, osteopatía, suelo pélvico y ejercicio terapéutico para que te recuperes de tus lesiones, alivies el dolor y vuelvas a moverte con confianza. Cada tratamiento empieza con una valoración y se adapta a ti.",
+  "puntosFuertes": [
+    "Valoración inicial en cada caso",
+    "Equipo multidisciplinar",
+    "Pilates en grupos reducidos",
+    "Bebés, niños y adultos"
+  ],
   "color": "#2b6f6a",
   "portada": {
     "src": "fotos/fisioterapia-catarroja-portada.jpg",
@@ -47,6 +53,7 @@
     "domingo": []
   },
   "tituloServicios": "Tratamientos",
+  "introServicios": "Tratamientos personalizados para aliviar el dolor, recuperarte de una lesión y cuidar tu salud en cada etapa de la vida.",
   "servicios": [
     {
       "grupo": "Fisioterapia",
