@@ -443,6 +443,7 @@ ${schemas(d, sector, url)}
   .estado:empty { display: none; }
   .estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
   .estado.abierto { background: #dcf5e3; color: #12692f; } .estado.cerrado { background: #fde4e1; color: #9b2217; }
+  @media (prefers-color-scheme: dark) { .estado.abierto { background: #133a22; color: #86e3a6; } .estado.cerrado { background: #3d1814; color: #ffa197; } }
   .hero-grid.sin-foto { grid-template-columns: 1fr; }
   .hero-grid.sin-foto .eslogan { max-width: 52ch; }
   .hero-foto { position: relative; }
