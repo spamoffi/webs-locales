@@ -135,7 +135,37 @@ function favicon(d, color) {
   return "data:image/svg+xml," + encodeURIComponent(svg);
 }
 
-function pagina(d, url) {
+// Iconos en línea (trazo = currentColor)
+const ICONOS = {
+  telefono: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z"/>',
+  chat: '<path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.5A8.5 8.5 0 1 1 21 11.5Z"/>',
+  pin: '<path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+  reloj: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  estrella: '<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1Z"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  flecha: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  calendario: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  correo: '<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/>',
+};
+const icono = (n, clase = "ico") =>
+  `<svg class="${clase}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONOS[n]}</svg>`;
+
+const DIAS_CORTO = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+// "Lun–Vie 09:15–20:00 · Sáb–Dom Cerrado"
+function resumenHorario(h) {
+  if (!h) return [];
+  const txt = DIAS.map((dia) => ((h[dia] || []).length ? h[dia].map((t) => t.replace("-", "–")).join(" y ") : "Cerrado"));
+  const grupos = [];
+  txt.forEach((t, i) => {
+    const g = grupos[grupos.length - 1];
+    if (g && g.t === t) g.fin = i;
+    else grupos.push({ ini: i, fin: i, t });
+  });
+  return grupos.map((g) => ({ dias: g.ini === g.fin ? DIAS_CORTO[g.ini] : `${DIAS_CORTO[g.ini]}–${DIAS_CORTO[g.fin]}`, horas: g.t }));
+}
+
+function pagina(d, url, prefijo = "") {
   const sector = SECTORES[d.tipo] || SECTORES.generico;
   const demo = d.demo === true; // solo los ejemplos de main son demos (noindex)
   const color = /^#[0-9a-f]{3,8}$/i.test(d.color || "") ? d.color : "#1f6f5c";
@@ -144,6 +174,7 @@ function pagina(d, url) {
   const lugar = d.zona || d.ciudad || "";
   const comoLlegar = d.googleMaps || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(d.nombre + ", " + d.direccion)}`;
   const mapaEmbed = `https://www.google.com/maps?q=${encodeURIComponent(d.nombre + ", " + d.direccion)}&output=embed`;
+  const direccionCompleta = [d.direccion, [d.codigoPostal, d.ciudad].filter(Boolean).join(" ")].filter(Boolean).join(", ");
 
   // SEO: "Nombre | Categoría en Zona"
   const subtitulo = [d.categoria, lugar && `en ${lugar}`].filter(Boolean).join(" ");
@@ -156,88 +187,159 @@ function pagina(d, url) {
   const altBase = `${d.nombre}${subtitulo ? " – " + subtitulo : ""}`;
   const portada = foto(d.portada, altBase);
   const imagenSobre = foto(d.imagenSobre, altBase);
-  const imgTag = (f, extra = "") =>
-    `<img src="${esc(f.src)}" alt="${esc(f.alt)}" loading="lazy" decoding="async"${extra}>`;
+  const imgTag = (f, extra = "") => `<img src="${esc(f.src)}" alt="${esc(f.alt)}" loading="lazy" decoding="async"${extra}>`;
 
   // Contacto: acción principal según el sector (enlace de reservas > WhatsApp > teléfono)
   const ctaHref = d.enlaceReserva || (wa && `https://wa.me/${wa}?text=${encodeURIComponent(sector.msg)}`) || (tel && `tel:${tel}`);
   const ctaExterno = ctaHref && !ctaHref.startsWith("tel:");
-  const cta = ctaHref
-    ? `<a class="btn btn-main" href="${esc(ctaHref)}"${ctaExterno ? ' target="_blank" rel="noopener"' : ""}>${esc(d.textoBoton || sector.cta)}</a>`
-    : "";
-  const botones = [
-    cta,
-    tel && `<a class="btn" href="tel:${esc(tel)}">📞 ${esc(d.telefono)}</a>`,
-    wa && d.enlaceReserva && `<a class="btn" href="https://wa.me/${esc(wa)}" target="_blank" rel="noopener">💬 WhatsApp</a>`,
-    `<a class="btn" href="${esc(comoLlegar)}" target="_blank" rel="noopener">📍 Cómo llegar</a>`,
-  ].filter(Boolean).join("\n      ");
+  const ctaTexto = d.textoBoton || sector.cta;
+  const ctaIcono = ctaHref && ctaHref.includes("wa.me") ? "chat" : ctaHref && ctaHref.startsWith("tel:") ? "telefono" : "calendario";
+  const botonCta = (clase = "btn btn-primario") =>
+    ctaHref ? `<a class="${clase}" href="${esc(ctaHref)}"${ctaExterno ? ' target="_blank" rel="noopener"' : ""}>${icono(ctaIcono)}${esc(ctaTexto)}</a>` : "";
+  const botonTel = (clase = "btn btn-secundario") => (tel ? `<a class="${clase}" href="tel:${esc(tel)}">${icono("telefono")}${esc(d.telefono)}</a>` : "");
 
-  const valoracion = d.valoracion
-    ? `<p class="rating"><span aria-hidden="true">${estrellas(d.valoracion)}</span> ${Number(d.valoracion).toFixed(1).replace(".", ",")}${d.numResenas ? ` · ${esc(d.numResenas)} reseñas en Google` : ""}</p>`
-    : "";
+  const nota = d.valoracion ? Number(d.valoracion).toFixed(1).replace(".", ",") : "";
+  const horarioResumen = resumenHorario(d.horario);
+  const horarioAbierto = horarioResumen.find((g) => g.horas !== "Cerrado");
+  const tituloServicios = d.tituloServicios || sector.servicios;
+  const grupos = gruposServicios(d.servicios);
+  const hayGrupos = grupos.some((g) => g.grupo);
 
-  const servicios = (d.servicios || []).length
-    ? `<section id="servicios"><h2>${esc(d.tituloServicios || sector.servicios)}</h2>${gruposServicios(d.servicios)
-        .map(
-          (g) =>
-            `<div class="grupo${g.imagen ? " con-imagen" : ""}">${
-              g.imagen ? `<div class="grupo-img">${imgTag(foto(g.imagen, `${g.grupo} en ${d.nombre}`))}</div>` : ""
-            }<div class="grupo-txt">${g.grupo ? `<h3>${esc(g.grupo)}</h3>` : ""}<ul class="cards">${g.items
+  // Menú
+  const menu = [
+    grupos[0]?.items.length && ["#servicios", tituloServicios.length <= 14 ? tituloServicios : "Servicios"],
+    d.descripcion && ["#sobre", "Sobre nosotros"],
+    (d.resenas || []).length && ["#opiniones", "Opiniones"],
+    ["#contacto", "Contacto"],
+  ].filter(Boolean);
+
+  // Datos clave bajo la portada
+  const destacados = (d.destacados || [
+    d.valoracion && { icono: "estrella", titulo: `${nota} en Google`, texto: d.numResenas ? `${d.numResenas} opiniones de clientes` : "Valoración de clientes" },
+    horarioAbierto && { icono: "reloj", titulo: horarioAbierto.dias, texto: horarioAbierto.horas },
+    ctaHref && { icono: ctaIcono, titulo: ctaTexto, texto: ctaIcono === "chat" ? "Por WhatsApp, sin esperas" : ctaIcono === "telefono" ? d.telefono : "Online" },
+    { icono: "pin", titulo: d.ciudad || lugar || "Cómo llegar", texto: d.direccion },
+  ]).filter(Boolean).slice(0, 4);
+
+  const puntos = d.puntosFuertes || (hayGrupos ? grupos.map((g) => g.grupo) : []);
+
+  const servicios = grupos[0]?.items.length
+    ? `<section id="servicios" class="seccion alt"><div class="wrap">
+    <header class="cabecera centro"><p class="antetitulo">${esc(tituloServicios)}</p><h2>${esc(d.tituloServicios2 || `${tituloServicios}${lugar ? ` en ${lugar}` : ""}`)}</h2>${
+        d.introServicios ? `<p class="intro">${esc(d.introServicios)}</p>` : ""
+      }</header>
+    <div class="servicios${hayGrupos ? "" : ` planos${grupos[0].items.length % 3 === 0 || grupos[0].items.length % 2 === 1 ? "" : " pares"}`}">${
+        hayGrupos
+          ? grupos
               .map(
-                (s) =>
-                  `<li>${s.imagen ? imgTag(foto(s.imagen, `${s.nombre} en ${d.nombre}`), ' class="card-img"') : ""}<div class="fila"><strong>${esc(s.nombre)}</strong>${s.precio ? `<span class="precio">${esc(s.precio)}</span>` : ""}</div>${
-                    s.detalle ? `<span>${esc(s.detalle)}</span>` : ""
-                  }</li>`
+                (g) => `<article class="tarjeta servicio">${
+                  g.imagen ? `<div class="servicio-img">${imgTag(foto(g.imagen, `${g.grupo} en ${d.nombre}`))}</div>` : ""
+                }<div class="servicio-cuerpo"><h3>${esc(g.grupo)}</h3><ul class="lista-servicios">${g.items
+                  .map(
+                    (s) =>
+                      `<li><div class="fila"><strong>${esc(s.nombre)}</strong>${s.precio ? `<span class="precio">${esc(s.precio)}</span>` : ""}</div>${
+                        s.detalle ? `<p>${esc(s.detalle)}</p>` : ""
+                      }</li>`
+                  )
+                  .join("")}</ul></div></article>`
               )
-              .join("")}</ul></div></div>`
-        )
-        .join("")}</section>`
+              .join("")
+          : grupos[0].items
+              .map(
+                (s) => `<article class="tarjeta servicio">${s.imagen ? `<div class="servicio-img">${imgTag(foto(s.imagen, `${s.nombre} en ${d.nombre}`))}</div>` : ""}<div class="servicio-cuerpo"><div class="fila"><h3>${esc(
+                  s.nombre
+                )}</h3>${s.precio ? `<span class="precio">${esc(s.precio)}</span>` : ""}</div>${s.detalle ? `<p>${esc(s.detalle)}</p>` : ""}</div></article>`
+              )
+              .join("")
+      }</div>
+    ${ctaHref ? `<div class="centro mas">${botonCta()}</div>` : ""}
+  </div></section>`
     : "";
 
-  const zonaServicio = d.zonaServicio?.length
-    ? `<section><h2>Zonas donde trabajamos</h2><p>${d.zonaServicio.map(esc).join(" · ")}</p></section>`
-    : "";
-
-  const fotos = (d.fotos || []).length
-    ? `<section><h2>Fotos</h2><div class="fotos">${d.fotos
-        .map((f, i) => imgTag(foto(f, `${altBase} (foto ${i + 1})`)))
-        .join("")}</div></section>`
-    : "";
-
-  const horario = d.horario
-    ? `<section id="horario"><h2>Horario <span id="estado" class="estado"></span></h2><table>${DIAS.map(
-        (dia, i) =>
-          `<tr data-dia="${i}"><th>${DIAS_TXT[i]}</th><td>${
-            (d.horario[dia] || []).length ? d.horario[dia].map((t) => esc(t.replace("-", " – "))).join("<br>") : "Cerrado"
-          }</td></tr>`
-      ).join("")}</table></section>`
+  const sobre = d.descripcion
+    ? `<section id="sobre" class="seccion"><div class="wrap sobre${imagenSobre ? "" : " sin-imagen"}">
+    ${imagenSobre ? `<div class="sobre-img">${imgTag(imagenSobre)}</div>` : ""}
+    <div class="sobre-texto">
+      <p class="antetitulo">Sobre nosotros</p>
+      <h2>${esc(d.tituloSobre || `Sobre ${d.nombre}`)}</h2>
+      ${String(d.descripcion).split(/\n+/).map((p) => `<p class="intro">${esc(p)}</p>`).join("")}
+      ${puntos.length ? `<ul class="checks">${puntos.map((p) => `<li>${icono("check")}${esc(p)}</li>`).join("")}</ul>` : ""}
+    </div>
+  </div></section>`
     : "";
 
   const resenas = (d.resenas || []).length
-    ? `<section><h2>Lo que dicen nuestros clientes</h2><div class="cards">${d.resenas
-        .map(
-          (r) =>
-            `<blockquote><span class="stars" aria-label="${esc(r.estrellas)} de 5">${estrellas(r.estrellas)}</span><p>“${esc(r.texto)}”</p><cite>${esc(r.autor)}</cite></blockquote>`
-        )
-        .join("")}</div>${
-        d.googleMaps ? `<p><a href="${esc(d.googleMaps)}" target="_blank" rel="noopener">Ver todas las reseñas en Google →</a></p>` : ""
-      }</section>`
+    ? `<section id="opiniones" class="seccion alt"><div class="wrap">
+    <header class="cabecera centro"><p class="antetitulo">Opiniones</p><h2>Lo que dicen nuestros clientes</h2>${
+        nota ? `<p class="intro">${icono("estrella", "ico estrella")} ${nota} de media${d.numResenas ? ` en ${esc(d.numResenas)} opiniones de Google` : ""}</p>` : ""
+      }</header>
+    <div class="resenas">${d.resenas
+      .map(
+        (r) =>
+          `<figure class="tarjeta resena"><div class="estrellas" aria-label="${esc(r.estrellas)} de 5">${estrellas(r.estrellas)}</div><blockquote>“${esc(
+            r.texto
+          )}”</blockquote><figcaption><span class="avatar">${esc((r.autor || "?").trim()[0])}</span>${esc(r.autor)}</figcaption></figure>`
+      )
+      .join("")}</div>
+    ${d.googleMaps ? `<p class="centro mas"><a class="enlace" href="${esc(d.googleMaps)}" target="_blank" rel="noopener">Ver todas las opiniones en Google ${icono("flecha")}</a></p>` : ""}
+  </div></section>`
+    : "";
+
+  const galeria = (d.fotos || []).length
+    ? `<section class="seccion"><div class="wrap">
+    <header class="cabecera"><p class="antetitulo">Galería</p><h2>${esc(d.tituloGaleria || `Conoce ${d.nombre}`)}</h2></header>
+    <div class="galeria" tabindex="0" aria-label="Galería de fotos">${d.fotos.map((f, i) => imgTag(foto(f, `${altBase} (foto ${i + 1})`))).join("")}</div>
+  </div></section>`
     : "";
 
   const preguntas = (d.preguntas || []).length
-    ? `<section><h2>Preguntas frecuentes</h2>${d.preguntas
-        .map((q) => `<details><summary>${esc(q.p)}</summary><p>${esc(q.r)}</p></details>`)
-        .join("")}</section>`
+    ? `<section id="preguntas" class="seccion alt"><div class="wrap faq">
+    <div><p class="antetitulo">Preguntas frecuentes</p><h2>¿Tienes dudas?</h2><p class="intro">Aquí respondemos a lo que más nos preguntan. Si no encuentras lo que buscas, escríbenos o llámanos.</p>
+      <div class="acciones">${botonCta()}${botonTel()}</div></div>
+    <div class="acordeon">${d.preguntas.map((q, i) => `<details${i === 0 ? " open" : ""}><summary>${esc(q.p)}</summary><p>${esc(q.r)}</p></details>`).join("")}</div>
+  </div></section>`
+    : "";
+
+  const tablaHorario = d.horario
+    ? `<table class="horario">${DIAS.map(
+        (dia, i) =>
+          `<tr data-dia="${i}"><th>${DIAS_TXT[i]}</th><td>${
+            (d.horario[dia] || []).length ? d.horario[dia].map((t) => esc(t.replace("-", " – "))).join("<br>") : '<span class="cerrado">Cerrado</span>'
+          }</td></tr>`
+      ).join("")}</table>`
+    : "";
+
+  const contacto = `<section id="contacto" class="seccion"><div class="wrap">
+    <header class="cabecera"><p class="antetitulo">Horario y contacto</p><h2>Dónde estamos</h2></header>
+    <div class="contacto">
+      <div class="tarjeta contacto-datos">
+        ${d.horario ? `<div class="bloque"><h3>${icono("reloj")}Horario <span class="estado" data-estado></span></h3>${tablaHorario}</div>` : ""}
+        <div class="bloque"><h3>${icono("pin")}Dirección</h3><address>${esc(direccionCompleta)}</address>
+          <a class="enlace" href="${esc(comoLlegar)}" target="_blank" rel="noopener">Cómo llegar ${icono("flecha")}</a></div>
+        ${d.zonaServicio?.length ? `<div class="bloque"><h3>${icono("pin")}Zonas donde trabajamos</h3><p>${d.zonaServicio.map(esc).join(" · ")}</p></div>` : ""}
+        <div class="bloque acciones">${botonCta()}${botonTel()}${
+    d.email ? `<a class="btn btn-secundario" href="mailto:${esc(d.email)}">${icono("correo")}${esc(d.email)}</a>` : ""
+  }</div>
+      </div>
+      <iframe class="mapa" src="${esc(mapaEmbed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mapa de ${esc(d.nombre)}"></iframe>
+    </div>
+  </div></section>`;
+
+  const banda = ctaHref
+    ? `<section class="banda"><div class="wrap banda-dentro">
+    <div><h2>${esc(d.textoBanda || `${ctaTexto} en ${d.nombre}`)}</h2><p>${esc(d.subtextoBanda || (ctaIcono === "chat" ? "Escríbenos por WhatsApp y te respondemos lo antes posible." : "Estaremos encantados de atenderte."))}</p></div>
+    <div class="acciones">${botonCta("btn btn-claro")}${botonTel("btn btn-borde-claro")}</div>
+  </div></section>`
     : "";
 
   const redes = Object.entries(d.redes || {})
     .filter(([, v]) => v)
     .map(([k, v]) => `<a href="${esc(v)}" target="_blank" rel="noopener">${esc(k[0].toUpperCase() + k.slice(1))}</a>`)
-    .join(" · ");
+    .join("");
 
-  const barraMovil = ctaHref || tel
-    ? `<nav class="barra" aria-label="Contacto rápido">${cta}${tel ? `<a class="btn" href="tel:${esc(tel)}">📞 ${esc(d.telefono)}</a>` : ""}</nav>`
-    : "";
+  const logo = `<span class="logo-marca" aria-hidden="true">${esc((d.nombre.trim()[0] || "·").toUpperCase())}</span>`;
+  const barraMovil = ctaHref || tel ? `<nav class="barra" aria-label="Contacto rápido">${botonCta()}${botonTel()}</nav>` : "";
+  const fuente = `${prefijo}recursos/fuentes/plus-jakarta-sans.woff2`;
 
   return `<!doctype html>
 <html lang="es">
@@ -256,112 +358,283 @@ ${url ? `<meta property="og:url" content="${esc(url)}">` : ""}
 ${ogImagen ? `<meta property="og:image" content="${esc(ogImagen)}">` : ""}
 <meta name="theme-color" content="${color}">
 <link rel="icon" href="${favicon(d, color)}">
-<link rel="preconnect" href="https://www.google.com">
+<link rel="preload" href="${fuente}" as="font" type="font/woff2" crossorigin>
 ${portada ? `<link rel="preload" as="image" href="${esc(portada.src)}" fetchpriority="high">` : ""}
 ${schemas(d, sector, url)}
 <style>
-  :root { --c: ${color}; --fg: #1d1d1f; --muted: #5f6368; --bg: #fff; --soft: #f6f5f3; --line: #e5e3df; }
-  @media (prefers-color-scheme: dark) { :root { --fg: #f1f1f1; --muted: #a8a8a8; --bg: #141414; --soft: #1f1f1f; --line: #2e2e2e; } }
-  * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { margin: 0; font: 17px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); }
-  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
-  header { background: var(--c); color: #fff; padding: 56px 0 44px; }
-  header h1 { margin: 0 0 6px; font-size: clamp(2rem, 6vw, 3rem); line-height: 1.1; }
-  header .sub { margin: 0; opacity: .9; font-size: 1.05rem; }
-  header .eslogan { font-size: 1.15rem; margin: 14px 0 0; }
-  .rating { margin: 10px 0 0; } .rating span { color: #ffd54a; letter-spacing: 1px; }
-  .acciones { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
-  .btn { display: inline-flex; align-items: center; justify-content: center; background: #fff; color: var(--c); padding: 12px 18px; border-radius: 999px; font-weight: 600; text-decoration: none; border: 2px solid #fff; white-space: nowrap; }
-  .btn-main { background: #111; color: #fff; border-color: #111; }
-  .btn:hover { filter: brightness(.95); }
-  section { padding: 36px 0 8px; }
-  h2 { font-size: 1.4rem; margin: 0 0 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  h3 { font-size: 1.05rem; margin: 20px 0 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  .cards { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-  .cards li, blockquote { background: var(--soft); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin: 0; }
-  .cards li > span { display: block; color: var(--muted); font-size: .95rem; margin-top: 4px; }
-  .fila { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
-  .precio { font-weight: 700; white-space: nowrap; color: var(--c); }
-  blockquote p { margin: 6px 0; } blockquote cite { color: var(--muted); font-style: normal; font-size: .9rem; }
-  .stars { color: #e3a008; letter-spacing: 1px; }
-  table { border-collapse: collapse; width: 100%; max-width: 480px; }
-  th, td { text-align: left; padding: 8px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-  th { font-weight: 500; width: 40%; } tr.hoy { font-weight: 700; } tr.hoy th { color: var(--c); }
-  .estado { font-size: .8rem; padding: 3px 10px; border-radius: 999px; font-weight: 600; }
-  .estado.abierto { background: #d7f5dd; color: #11632a; } .estado.cerrado { background: #fde0e0; color: #8a1c1c; }
-  header { position: relative; overflow: hidden; }
-  header.con-portada { min-height: min(78vh, 640px); display: flex; align-items: flex-end; padding: 96px 0 48px; }
-  header.con-portada::before { content: ""; position: absolute; inset: 0; z-index: 1;
-    background: linear-gradient(180deg, rgba(0,0,0,.15) 0%, rgba(0,0,0,.35) 40%, color-mix(in srgb, var(--c) 85%, black) 100%); }
-  header .portada { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  header .wrap { position: relative; z-index: 2; width: 100%; }
-  header.con-portada h1, header.con-portada p { text-shadow: 0 1px 12px rgba(0,0,0,.35); }
-  .sobre.con-imagen { display: grid; gap: 24px; align-items: center; }
-  .sobre img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 18px; }
-  @media (min-width: 760px) { .sobre.con-imagen { grid-template-columns: 1.1fr .9fr; gap: 40px; } }
-  .grupo { margin-top: 20px; }
-  .grupo.con-imagen { display: grid; gap: 16px; }
-  .grupo-img img { width: 100%; height: 100%; min-height: 180px; max-height: 240px; object-fit: cover; border-radius: 14px; display: block; }
-  @media (min-width: 760px) {
-    .grupo.con-imagen { grid-template-columns: 280px 1fr; align-items: stretch; gap: 20px; }
-    .grupo.con-imagen:nth-of-type(even) { grid-template-columns: 1fr 280px; }
-    .grupo.con-imagen:nth-of-type(even) .grupo-img { order: 2; }
-    .grupo-img img { max-height: none; }
-    .grupo.con-imagen .cards { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  @font-face { font-family: "Jakarta"; src: url("${fuente}") format("woff2"); font-weight: 200 800; font-display: swap; }
+  :root {
+    --c: ${color};
+    --c-osc: color-mix(in srgb, var(--c) 72%, black);
+    --c-suave: color-mix(in srgb, var(--c) 9%, white);
+    --c-texto: var(--c);
+    --fg: #15181d; --muted: #5d6470; --bg: #ffffff; --bg-alt: #f6f5f2; --linea: #e8e5df; --tarjeta: #ffffff;
+    --sombra: 0 1px 2px rgba(16,24,40,.05), 0 18px 40px -18px rgba(16,24,40,.18);
+    --radio: 22px;
+    color-scheme: light;
   }
-  .grupo h3 { margin-top: 0; }
-  .card-img { width: calc(100% + 32px); margin: -16px -16px 12px; aspect-ratio: 16/10; object-fit: cover; border-radius: 14px 14px 0 0; display: block; }
-  .fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-  .fotos img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 12px; display: block; }
-  @media (min-width: 760px) { .fotos img:first-child { grid-column: span 2; grid-row: span 2; aspect-ratio: auto; height: 100%; } }
-  details { border-bottom: 1px solid var(--line); padding: 12px 0; } summary { cursor: pointer; font-weight: 600; } details p { margin: 8px 0 0; color: var(--muted); }
-  .mapa { width: 100%; height: 340px; border: 0; border-radius: 14px; background: var(--soft); }
-  a { color: var(--c); }
-  @media (prefers-color-scheme: dark) { main a, footer a { color: color-mix(in srgb, var(--c) 50%, white); } .precio, tr.hoy th { color: color-mix(in srgb, var(--c) 50%, white); } }
-  footer { margin-top: 48px; padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: .9rem; }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #eef0f3; --muted: #a4abb6; --bg: #0f1114; --bg-alt: #15181c; --linea: #262a30; --tarjeta: #181b20;
+      --c-suave: color-mix(in srgb, var(--c) 18%, #0f1114); --c-texto: color-mix(in srgb, var(--c) 50%, white);
+      --sombra: 0 1px 2px rgba(0,0,0,.3), 0 18px 40px -18px rgba(0,0,0,.6);
+      color-scheme: dark;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 84px; -webkit-text-size-adjust: 100%; }
+  body { margin: 0; font: 400 17px/1.65 "Jakarta", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: var(--fg); background: var(--bg); -webkit-font-smoothing: antialiased; }
+  img { max-width: 100%; display: block; }
+  a { color: inherit; }
+  h1, h2, h3 { line-height: 1.15; letter-spacing: -.02em; margin: 0; }
+  h2 { font-size: clamp(1.75rem, 3.6vw, 2.6rem); font-weight: 750; }
+  h3 { font-size: 1.2rem; font-weight: 700; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+  .ico { width: 1.15em; height: 1.15em; flex: none; }
+  .antetitulo { margin: 0 0 12px; color: var(--c-texto); font-weight: 700; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; }
+  .intro { color: var(--muted); font-size: 1.08rem; margin: 16px 0 0; max-width: 62ch; }
+  .centro { text-align: center; } .centro .intro { margin-inline: auto; }
+  .mas { margin-top: 40px; }
+  .seccion { padding: clamp(64px, 9vw, 112px) 0; }
+  .seccion.alt { background: var(--bg-alt); }
+  .cabecera { margin-bottom: clamp(32px, 5vw, 56px); }
+  .tarjeta { background: var(--tarjeta); border: 1px solid var(--linea); border-radius: var(--radio); box-shadow: var(--sombra); }
+
+  /* Botones */
+  .acciones { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 22px; border-radius: 999px; font-weight: 650; font-size: 1rem; text-decoration: none; white-space: nowrap; border: 1.5px solid transparent; transition: transform .15s ease, background .15s ease, box-shadow .15s ease; }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primario { background: var(--c); color: #fff; box-shadow: 0 10px 24px -10px var(--c); }
+  .btn-primario:hover { background: var(--c-osc); }
+  .btn-secundario { background: var(--tarjeta); color: var(--fg); border-color: var(--linea); }
+  .btn-secundario:hover { border-color: var(--c-texto); color: var(--c-texto); }
+  .btn-claro { background: #fff; color: var(--c-osc); }
+  .btn-borde-claro { color: #fff; border-color: rgba(255,255,255,.55); }
+  .btn-borde-claro:hover { background: rgba(255,255,255,.12); }
+  .enlace { display: inline-flex; align-items: center; gap: 6px; color: var(--c-texto); font-weight: 650; text-decoration: none; }
+  .enlace:hover { text-decoration: underline; }
+
+  /* Barra superior */
+  .top { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--bg) 82%, transparent); backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px); border-bottom: 1px solid var(--linea); }
+  .top .wrap { display: flex; align-items: center; gap: 24px; height: 72px; }
+  .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; font-weight: 750; font-size: 1.08rem; letter-spacing: -.01em; min-width: 0; }
+  .logo span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .logo-marca { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: var(--c); color: #fff; font-weight: 800; flex: none; }
+  .top nav { display: flex; gap: 28px; margin-left: auto; }
+  .top nav a { text-decoration: none; color: var(--muted); font-weight: 550; font-size: .95rem; white-space: nowrap; }
+  .top nav a:hover { color: var(--fg); }
+  .top .btn { padding: 10px 18px; font-size: .95rem; }
+  .top .tel { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 650; white-space: nowrap; }
+  @media (max-width: 1180px) { .top .tel { display: none; } }
+
+  /* Portada */
+  .hero { position: relative; overflow: hidden; padding: clamp(40px, 7vw, 88px) 0 0; background:
+      radial-gradient(900px 480px at 85% 0%, var(--c-suave), transparent 70%),
+      radial-gradient(700px 420px at 0% 100%, color-mix(in srgb, var(--c-suave) 70%, transparent), transparent 70%); }
+  .hero-grid { display: grid; grid-template-columns: 1.02fr .98fr; gap: clamp(32px, 6vw, 72px); align-items: center; }
+  .pildora { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; background: var(--c-suave); color: var(--c-texto); font-weight: 650; font-size: .88rem; }
+  .hero h1 { font-size: clamp(2.5rem, 6vw, 4.3rem); font-weight: 800; letter-spacing: -.035em; margin: 22px 0 0; }
+  .hero .eslogan { font-size: clamp(1.1rem, 1.8vw, 1.3rem); color: var(--muted); margin: 20px 0 0; max-width: 34ch; }
+  .hero .acciones { margin-top: 34px; }
+  .confianza { display: flex; flex-wrap: wrap; gap: 10px 22px; margin-top: 28px; color: var(--muted); font-size: .95rem; }
+  .confianza span { display: inline-flex; align-items: center; gap: 8px; }
+  .confianza .estrella { color: #f5a524; fill: #f5a524; }
+  .estado { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; font-weight: 650; padding: 3px 10px; border-radius: 999px; letter-spacing: 0; }
+  .estado:empty { display: none; }
+  .estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .estado.abierto { background: #dcf5e3; color: #12692f; } .estado.cerrado { background: #fde4e1; color: #9b2217; }
+  .hero-grid.sin-foto { grid-template-columns: 1fr; }
+  .hero-grid.sin-foto .eslogan { max-width: 52ch; }
+  .hero-foto { position: relative; }
+  .hero-foto img { width: 100%; aspect-ratio: 5 / 4.4; object-fit: cover; border-radius: 32px; box-shadow: var(--sombra); }
+  .insignia { position: absolute; left: -22px; bottom: 28px; display: flex; align-items: center; gap: 14px; padding: 14px 18px; background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 18px; box-shadow: var(--sombra); }
+  .insignia strong { font-size: 1.6rem; font-weight: 800; letter-spacing: -.02em; }
+  .insignia small { display: block; color: var(--muted); font-size: .82rem; line-height: 1.35; }
+  .insignia .estrellas { color: #f5a524; letter-spacing: 1px; font-size: .95rem; }
+  .datos { display: grid; grid-template-columns: repeat(${Math.max(destacados.length, 1)}, 1fr); margin-top: clamp(48px, 7vw, 80px); border-top: 1px solid var(--linea); }
+  .dato { display: flex; gap: 14px; padding: 26px 22px 30px 0; }
+  .dato + .dato { padding-left: 22px; border-left: 1px solid var(--linea); }
+  .dato .ico { width: 42px; height: 42px; padding: 10px; border-radius: 12px; background: var(--c-suave); color: var(--c-texto); }
+  .dato strong { display: block; font-weight: 700; line-height: 1.3; }
+  .dato span { color: var(--muted); font-size: .92rem; line-height: 1.45; display: block; margin-top: 2px; }
+
+  /* Sobre */
+  .sobre { display: grid; grid-template-columns: .95fr 1.05fr; gap: clamp(32px, 6vw, 80px); align-items: center; }
+  .sobre.sin-imagen { grid-template-columns: 1fr; }
+  .sobre-img img { width: 100%; aspect-ratio: 1 / 1.05; object-fit: cover; border-radius: 28px; }
+  .checks { list-style: none; padding: 0; margin: 28px 0 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 20px; }
+  .checks li { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .checks .ico { width: 26px; height: 26px; padding: 5px; border-radius: 50%; background: var(--c); color: #fff; stroke-width: 3; }
+
+  /* Servicios */
+  .servicios { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .servicios.planos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .servicios.planos.pares { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .servicio { overflow: hidden; display: flex; flex-direction: column; }
+  .servicio-img img { width: 100%; aspect-ratio: 16 / 8; object-fit: cover; }
+  .servicio-cuerpo { padding: 26px 28px 28px; }
+  .servicio h3 { margin-bottom: 6px; }
+  .lista-servicios { list-style: none; margin: 0; padding: 0; }
+  .lista-servicios li { padding: 14px 0; border-bottom: 1px solid var(--linea); }
+  .lista-servicios li:last-child { border-bottom: 0; padding-bottom: 0; }
+  .lista-servicios p, .servicios.planos p { margin: 4px 0 0; color: var(--muted); font-size: .95rem; line-height: 1.5; }
+  .fila { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  .precio { font-weight: 750; color: var(--c-texto); white-space: nowrap; }
+
+  /* Opiniones */
+  .resenas { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+  .resena { margin: 0; padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+  .resena .estrellas { color: #f5a524; letter-spacing: 2px; }
+  .resena blockquote { margin: 0; font-size: 1.05rem; flex: 1; }
+  .resena figcaption { display: flex; align-items: center; gap: 12px; font-weight: 650; }
+  .avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--c-suave); color: var(--c-texto); font-weight: 800; }
+  .cabecera .intro .ico { vertical-align: -3px; }
+
+  /* Galería (carrusel sin huecos) */
+  .galeria { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 48px) / 3.25); gap: 24px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 12px; scrollbar-width: thin; }
+  .galeria img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radio); scroll-snap-align: start; }
+
+  /* Preguntas */
+  .faq { display: grid; grid-template-columns: .8fr 1.2fr; gap: clamp(32px, 6vw, 80px); align-items: start; }
+  .faq .acciones { margin-top: 28px; }
+  .acordeon details { background: var(--tarjeta); border: 1px solid var(--linea); border-radius: 16px; padding: 0 22px; margin-bottom: 12px; }
+  .acordeon summary { cursor: pointer; list-style: none; font-weight: 650; padding: 20px 32px 20px 0; position: relative; }
+  .acordeon summary::-webkit-details-marker { display: none; }
+  .acordeon summary::after { content: "+"; position: absolute; right: 0; top: 50%; transform: translateY(-50%); font-size: 1.5rem; font-weight: 400; color: var(--c-texto); transition: transform .2s; }
+  .acordeon details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
+  .acordeon details p { margin: 0 0 20px; color: var(--muted); }
+
+  /* Contacto */
+  .contacto { display: grid; grid-template-columns: .9fr 1.1fr; gap: 24px; align-items: stretch; }
+  .contacto-datos { padding: 32px; display: flex; flex-direction: column; gap: 28px; }
+  .bloque h3 { display: flex; align-items: center; gap: 10px; font-size: 1.05rem; margin-bottom: 12px; flex-wrap: wrap; }
+  .bloque h3 .ico { color: var(--c-texto); }
+  address { font-style: normal; margin-bottom: 8px; }
+  .horario { border-collapse: collapse; width: 100%; font-size: .97rem; }
+  .horario th, .horario td { text-align: left; padding: 8px 0; border-bottom: 1px dashed var(--linea); vertical-align: top; }
+  .horario th { font-weight: 500; color: var(--muted); width: 45%; }
+  .horario td { text-align: right; font-variant-numeric: tabular-nums; }
+  .horario tr:last-child th, .horario tr:last-child td { border-bottom: 0; }
+  .horario tr.hoy th, .horario tr.hoy td { color: var(--c-texto); font-weight: 750; }
+  .cerrado { color: var(--muted); }
+  .mapa { width: 100%; min-height: 420px; height: 100%; border: 0; border-radius: var(--radio); background: var(--bg-alt); box-shadow: var(--sombra); }
+
+  /* Banda final */
+  .banda { background: linear-gradient(135deg, var(--c), var(--c-osc)); color: #fff; padding: clamp(56px, 8vw, 88px) 0; }
+  .banda-dentro { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+  .banda h2 { color: #fff; } .banda p { margin: 10px 0 0; opacity: .85; font-size: 1.08rem; }
+
+  /* Pie */
+  footer { background: #101215; color: #c5cad3; padding: 64px 0 32px; font-size: .95rem; }
+  .pie { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; }
+  footer .logo { color: #fff; margin-bottom: 14px; }
+  footer h4 { color: #fff; font-size: .8rem; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 14px; }
+  footer p { margin: 0 0 8px; } footer a { color: #fff; text-decoration: none; } footer a:hover { text-decoration: underline; }
+  .redes { display: flex; gap: 16px; margin-top: 16px; }
+  .legal { margin-top: 48px; padding-top: 24px; border-top: 1px solid #23272d; color: #8a909b; font-size: .85rem; }
+
   .barra { display: none; }
-  @media (max-width: 640px) {
-    .barra { display: flex; gap: 8px; position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: var(--bg); border-top: 1px solid var(--line); z-index: 10; }
-    .barra .btn { flex: 1; padding: 12px 6px; font-size: clamp(.85rem, 4vw, 1rem); } .barra .btn:not(.btn-main) { border-color: var(--c); }
-    .barra .btn-main { background: var(--c); border-color: var(--c); }
-    body { padding-bottom: 76px; }
+
+  @media (max-width: 960px) {
+    .top nav, .top .tel { display: none; }
+    .top .btn { margin-left: auto; }
+    .hero-grid, .sobre, .faq, .contacto { grid-template-columns: 1fr; }
+    .hero-foto { max-width: 640px; }
+    .insignia { left: 16px; bottom: 16px; }
+    .datos { grid-template-columns: repeat(2, 1fr); }
+    .dato:nth-child(3) { border-left: 0; padding-left: 0; }
+    .dato:nth-child(n+3) { border-top: 1px solid var(--linea); }
+    .servicios, .servicios.planos, .servicios.planos.pares { grid-template-columns: 1fr; }
+    .galeria { grid-auto-columns: 72%; }
+    .pie { grid-template-columns: 1fr 1fr; } .pie > :first-child { grid-column: 1 / -1; }
+    .mapa { min-height: 320px; }
   }
+  @media (max-width: 640px) {
+    .wrap { padding: 0 18px; }
+    .top .btn { display: none; }
+    .datos { grid-template-columns: 1fr; }
+    .dato, .dato + .dato { padding: 18px 0; border-left: 0; }
+    .dato + .dato { border-top: 1px solid var(--linea); }
+    .checks { grid-template-columns: 1fr; }
+    .servicio-cuerpo, .contacto-datos { padding: 22px; }
+    .galeria { grid-auto-columns: 84%; gap: 14px; }
+    .pie { grid-template-columns: 1fr; }
+    .hero .acciones .btn, .banda .btn, .faq .btn, .contacto .acciones .btn { flex: 1 1 100%; }
+    .barra { display: flex; gap: 8px; position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--bg) 92%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-top: 1px solid var(--linea); }
+    .barra .btn { flex: 1; padding: 13px 8px; font-size: clamp(.85rem, 3.9vw, 1rem); gap: 7px; }
+    body { padding-bottom: 80px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn { transition: none; } }
 </style>
 </head>
 <body>
-<header${portada ? ' class="con-portada"' : ""}>
-  ${portada ? `<img class="portada" src="${esc(portada.src)}" alt="${esc(portada.alt)}" fetchpriority="high" decoding="async">` : ""}
+<header class="top">
   <div class="wrap">
-    <h1>${esc(d.nombre)}</h1>
-    ${subtitulo ? `<p class="sub">${esc(subtitulo)}</p>` : ""}
-    ${d.eslogan ? `<p class="eslogan">${esc(d.eslogan)}</p>` : ""}
-    ${valoracion}
-    <div class="acciones">
-      ${botones}
-    </div>
+    <a class="logo" href="#">${logo}<span>${esc(d.nombre)}</span></a>
+    <nav aria-label="Secciones">${menu.map(([h, t]) => `<a href="${h}">${esc(t)}</a>`).join("")}</nav>
+    ${tel ? `<a class="tel" href="tel:${esc(tel)}">${icono("telefono")}${esc(d.telefono)}</a>` : ""}
+    ${botonCta()}
   </div>
 </header>
-<main class="wrap">
-  ${d.descripcion ? `<section class="sobre${imagenSobre ? " con-imagen" : ""}"><div><h2>Sobre ${esc(d.nombre)}</h2><p>${esc(d.descripcion)}</p></div>${imagenSobre ? imgTag(imagenSobre) : ""}</section>` : ""}
-  ${servicios}
-  ${zonaServicio}
-  ${horario}
-  ${fotos}
-  ${resenas}
-  ${preguntas}
-  <section id="ubicacion">
-    <h2>Dónde estamos</h2>
-    <address style="font-style:normal"><p>${esc(d.direccion)}${d.codigoPostal || d.ciudad ? `, ${esc([d.codigoPostal, d.ciudad].filter(Boolean).join(" "))}` : ""}</p></address>
-    <iframe class="mapa" src="${esc(mapaEmbed)}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mapa de ${esc(d.nombre)}"></iframe>
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid${portada ? "" : " sin-foto"}">
+        <div>
+          ${subtitulo ? `<span class="pildora">${icono("pin")}${esc(subtitulo)}</span>` : ""}
+          <h1>${esc(d.nombre)}</h1>
+          ${d.eslogan ? `<p class="eslogan">${esc(d.eslogan)}</p>` : ""}
+          <div class="acciones">${botonCta()}${botonTel()}</div>
+          <div class="confianza">
+            ${d.valoracion && !portada ? `<span>${icono("estrella", "ico estrella")}<strong>${nota}</strong>${d.numResenas ? ` · ${esc(d.numResenas)} opiniones en Google` : ""}</span>` : ""}
+            ${d.horario ? `<span>${icono("reloj")}<span class="estado" data-estado></span><span data-proximo></span></span>` : ""}
+          </div>
+        </div>
+        ${
+          portada
+            ? `<div class="hero-foto"><img src="${esc(portada.src)}" alt="${esc(portada.alt)}" fetchpriority="high" decoding="async">${
+                d.valoracion
+                  ? `<div class="insignia"><strong>${nota}</strong><div><div class="estrellas" aria-hidden="true">${estrellas(d.valoracion)}</div><small>${
+                      d.numResenas ? `${esc(d.numResenas)} opiniones` : "Opiniones"
+                    } en Google</small></div></div>`
+                  : ""
+              }</div>`
+            : ""
+        }
+      </div>
+      <div class="datos">${destacados
+        .map((x) => `<div class="dato">${icono(x.icono || "check")}<div><strong>${esc(x.titulo)}</strong>${x.texto ? `<span>${esc(x.texto)}</span>` : ""}</div></div>`)
+        .join("")}</div>
+    </div>
   </section>
+  ${servicios}
+  ${sobre}
+  ${resenas}
+  ${galeria}
+  ${preguntas}
+  ${contacto}
+  ${banda}
 </main>
 <footer>
   <div class="wrap">
-    <strong>${esc(d.nombre)}</strong> · ${esc(d.direccion)}${d.ciudad ? `, ${esc(d.ciudad)}` : ""}
-    ${d.telefono ? `· <a href="tel:${esc(tel)}">${esc(d.telefono)}</a>` : ""}
-    ${d.email ? `· <a href="mailto:${esc(d.email)}">${esc(d.email)}</a>` : ""}
-    ${redes ? `<br>${redes}` : ""}
+    <div class="pie">
+      <div>
+        <a class="logo" href="#">${logo}<span>${esc(d.nombre)}</span></a>
+        <p>${esc(subtitulo || d.categoria || "")}</p>
+        ${redes ? `<div class="redes">${redes}</div>` : ""}
+      </div>
+      <div>
+        <h4>Contacto</h4>
+        <p>${esc(direccionCompleta)}</p>
+        ${d.telefono ? `<p><a href="tel:${esc(tel)}">${esc(d.telefono)}</a></p>` : ""}
+        ${d.email ? `<p><a href="mailto:${esc(d.email)}">${esc(d.email)}</a></p>` : ""}
+      </div>
+      <div>
+        <h4>Horario</h4>
+        ${horarioResumen.map((g) => `<p>${esc(g.dias)}: ${esc(g.horas)}</p>`).join("")}
+      </div>
+    </div>
+    <p class="legal">© ${new Date().getFullYear()} ${esc(d.nombre)}</p>
   </div>
 </footer>
 ${barraMovil}
@@ -375,17 +648,31 @@ ${barraMovil}
     var dia = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].indexOf(get("weekday"));
     var ahora = (+get("hour") % 24) * 60 + +get("minute");
     var min = function (h) { var a = h.split(":"); return +a[0] * 60 + +a[1]; };
-    var ayer = (dia + 6) % 7;
-    var dentro = function (t, hoy) {
+    var ayer = (dia + 6) % 7, cierre = null;
+    horario[dia].forEach(function (t) {
       var r = t.split("-"), ini = min(r[0]), fin = min(r[1]);
-      if (fin > ini) return hoy && ahora >= ini && ahora < fin;
-      return hoy ? ahora >= ini : ahora < fin; // tramos que pasan de medianoche
-    };
-    var abierto = horario[dia].some(function (t) { return dentro(t, true); }) || horario[ayer].some(function (t) { return dentro(t, false); });
-    var fila = document.querySelector('tr[data-dia="' + dia + '"]');
+      if (fin > ini ? ahora >= ini && ahora < fin : ahora >= ini) cierre = r[1];
+    });
+    horario[ayer].forEach(function (t) {
+      var r = t.split("-"), ini = min(r[0]), fin = min(r[1]);
+      if (fin <= ini && ahora < fin) cierre = r[1]; // tramos que pasan de medianoche
+    });
+    var proximo = "";
+    if (cierre) proximo = "Hasta las " + cierre;
+    else {
+      var hoy = horario[dia].map(function (t) { return t.split("-")[0]; }).filter(function (h) { return min(h) > ahora; });
+      if (hoy.length) proximo = "Abre a las " + hoy[0];
+      else for (var k = 1; k <= 7; k++) {
+        var s = horario[(dia + k) % 7];
+        if (s.length) { proximo = "Abre " + (k === 1 ? "mañana" : ${JSON.stringify(DIAS_TXT.map((t) => t.toLowerCase()))}[(dia + k) % 7]) + " a las " + s[0].split("-")[0]; break; }
+      }
+    }
+    document.querySelectorAll("[data-estado]").forEach(function (e) {
+      e.textContent = cierre ? "Abierto ahora" : "Cerrado ahora"; e.className = "estado " + (cierre ? "abierto" : "cerrado");
+    });
+    document.querySelectorAll("[data-proximo]").forEach(function (e) { e.textContent = proximo; });
+    var fila = document.querySelector('.horario tr[data-dia="' + dia + '"]');
     if (fila) fila.classList.add("hoy");
-    var e = document.getElementById("estado");
-    if (e) { e.textContent = abierto ? "Abierto ahora" : "Cerrado ahora"; e.className = "estado " + (abierto ? "abierto" : "cerrado"); }
   } catch (err) {}
 })();
 </script>
@@ -446,11 +733,16 @@ function main() {
     const url = urlDe(slug, d);
     fs.mkdirSync(salida, { recursive: true });
     copiarCarpeta(dir, salida);
-    fs.writeFileSync(path.join(salida, "index.html"), pagina(d, url));
+    fs.writeFileSync(path.join(salida, "index.html"), pagina(d, url, enRaiz ? "" : "../"));
     console.log(`✔ ${slug}${d.demo === true ? " (demo, noindex)" : ""}${url ? `  ${url}` : ""}`);
   }
 
   if (!enRaiz) fs.writeFileSync(path.join(DIST, "index.html"), indice(lista));
+
+  // Recursos comunes (tipografía) en la raíz de la web
+  const recursos = path.join(DIST, "recursos");
+  fs.mkdirSync(recursos, { recursive: true });
+  copiarCarpeta(path.join(RAIZ, "recursos"), recursos);
 
   // robots.txt, sitemap y cabeceras (Cloudflare Pages lee _headers)
   const unico = enRaiz ? lista[0].d : null;
