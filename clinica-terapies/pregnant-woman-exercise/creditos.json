@@ -1,0 +1,29 @@
+{
+  "busqueda": "pregnant woman exercise",
+  "fuente": "openverse",
+  "orientacion": "landscape",
+  "fotos": [
+    {
+      "archivo": "01-stocksnap-4ce285bb.jpg",
+      "id": "stocksnap-4ce285bb",
+      "url": "https://cdn.stocksnap.io/img-thumbs/960w/4GGMTEBZY9.jpg",
+      "autor": "Freestocks.org",
+      "pagina": "https://stocksnap.io/photo/pregnant-woman-4GGMTEBZY9",
+      "licencia": "CC0 (stocksnap)",
+      "alt": "Pregnant Woman",
+      "ancho": 5472,
+      "alto": 3648
+    },
+    {
+      "archivo": "02-rawpixel-c8410d08.jpg",
+      "id": "rawpixel-c8410d08",
+      "url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTExL25zNjM3My1pbWFnZS5qcGc.jpg",
+      "autor": "desconocido",
+      "pagina": "https://www.rawpixel.com/image/8809328/pregnant-woman-yoga",
+      "licencia": "CC0 (rawpixel)",
+      "alt": "Pregnant Woman Yoga",
+      "ancho": 5472,
+      "alto": 3648
+    }
+  ]
+}
