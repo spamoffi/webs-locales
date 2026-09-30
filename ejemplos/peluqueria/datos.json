@@ -1,0 +1,49 @@
+{
+  "demo": true,
+  "tipo": "peluqueria",
+  "nombre": "Estudio Marta Peluqueros",
+  "categoria": "Peluquería",
+  "zona": "Chamberí, Madrid",
+  "eslogan": "Cortes, color y peinados con cita previa",
+  "descripcion": "Peluquería unisex con más de 15 años en Chamberí. Especialistas en coloración, mechas balayage y tratamientos de keratina. Trabajamos con cita para que nunca tengas que esperar.",
+  "color": "#3d3a6b",
+
+  "telefono": "+34 611 111 111",
+  "whatsapp": "34611111111",
+  "direccion": "Calle de Fuencarral 150",
+  "codigoPostal": "28010",
+  "ciudad": "Madrid",
+  "googleMaps": "",
+  "zonaHoraria": "Europe/Madrid",
+  "rangoPrecio": "€€",
+
+  "valoracion": 4.9,
+  "numResenas": 87,
+
+  "horario": {
+    "lunes": [],
+    "martes": ["10:00-20:00"],
+    "miercoles": ["10:00-20:00"],
+    "jueves": ["10:00-21:00"],
+    "viernes": ["10:00-21:00"],
+    "sabado": ["09:30-15:00"],
+    "domingo": []
+  },
+
+  "servicios": [
+    { "nombre": "Corte mujer", "detalle": "Lavado, corte y secado", "precio": "desde 28 €" },
+    { "nombre": "Corte hombre", "precio": "16 €" },
+    { "nombre": "Mechas balayage", "detalle": "Incluye matiz y peinado", "precio": "desde 75 €" },
+    { "nombre": "Tratamiento de keratina", "precio": "desde 90 €" }
+  ],
+
+  "resenas": [
+    { "autor": "Carmen L.", "estrellas": 5, "texto": "Marta es una artista con el color. Salgo encantada siempre." },
+    { "autor": "Javier M.", "estrellas": 5, "texto": "Puntuales con la cita y muy buen corte." }
+  ],
+
+  "preguntas": [
+    { "p": "¿Hace falta pedir cita?", "r": "Sí, trabajamos con cita previa. Puedes pedirla por WhatsApp o por teléfono." },
+    { "p": "¿Cuánto dura un balayage?", "r": "Entre 2 y 3 horas según el largo y el tono de partida." }
+  ]
+}

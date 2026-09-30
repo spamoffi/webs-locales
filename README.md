@@ -1,47 +1,102 @@
 # Webs de locales
 
-Webs de una sola página para negocios de Google Maps. Sin servidor, sin base de datos, sin plugins: **no necesitan mantenimiento**. Se publican gratis en GitHub Pages.
+Webs de una sola página para negocios de Google Maps. Sin servidor, sin base de datos, sin plugins: **no necesitan mantenimiento**. Se publican gratis en Cloudflare Pages.
 
-## Cómo añadir un local
+## Cómo se trabaja
 
-1. Copia la carpeta `locales/ejemplo-cafeteria` y renómbrala (minúsculas y guiones, ej. `locales/peluqueria-marta`). Ese nombre será la URL.
-2. Edita `datos.json` con la información del local (casi toda sale de su ficha de Google Maps).
-3. Si tiene fotos, ponlas en la misma carpeta (ej. `fotos/1.jpg`) y añádelas a `"fotos": ["fotos/1.jpg"]`.
-4. Sube los cambios a `main`. GitHub genera y publica la web sola.
+- **`main`** solo tiene la plantilla (`build.js`) y los ejemplos (`ejemplos/`). Su web publicada es un escaparate con los ejemplos.
+- **Cada local tiene su propia rama `local/<nombre>`**, creada desde `main`, con una única carpeta `locales/<nombre>/datos.json`.
+- Cloudflare Pages publica cada rama automáticamente en su propia dirección, que es el enlace de la demo para el cliente:
+  `local/peluqueria-marta` → `https://local-peluqueria-marta.webs-locales.pages.dev`
 
-La web quedará en `https://<usuario>.github.io/webs-locales/<nombre-carpeta>/`.
+### Crear la demo de un local
+
+```bash
+git checkout main && git pull
+git checkout -b local/peluqueria-marta
+mkdir -p locales/peluqueria-marta
+cp ejemplos/peluqueria/datos.json locales/peluqueria-marta/   # el ejemplo más parecido
+# editar locales/peluqueria-marta/datos.json
+node build.js                                                  # comprobar que genera sin errores
+git add -A && git commit -m "Demo: Peluquería Marta" && git push -u origin local/peluqueria-marta
+```
+
+### Pasar una demo a web definitiva
+
+En su `datos.json`: `"demo": false` y `"dominio": "https://sudominio.es"`. Así la web se indexa en Google y se generan `robots.txt`, `sitemap.xml` y la URL canónica.
+
+## Demos y Google
+
+Mientras `"demo"` no sea `false`, la web lleva `noindex` (en la página y en la cabecera `X-Robots-Tag`), así que **Google no la indexa**. Todo el SEO (títulos, descripción, datos estructurados) ya va preparado para cuando sea definitiva.
+
+## Sectores (`"tipo"`)
+
+El tipo cambia el tipo de negocio que ve Google (schema.org), el título de la sección de servicios y el botón principal:
+
+| tipo | Google lo ve como | Botón principal |
+|---|---|---|
+| `restaurante`, `bar` | Restaurant, BarOrPub | Reservar mesa |
+| `cafeteria` | CafeOrCoffeeShop | Hacer un pedido |
+| `panaderia` | Bakery | Hacer un encargo |
+| `peluqueria`, `barberia`, `estetica`, `unas` | HairSalon, BeautySalon, NailSalon | Pedir cita |
+| `dentista`, `clinica`, `fisioterapia`, `veterinario` | Dentist, MedicalClinic, Physiotherapy, VeterinaryCare | Pedir cita |
+| `gimnasio` | ExerciseGym | Pedir información |
+| `taller`, `reformas`, `fontaneria`, `electricista` | AutoRepair, HomeAndConstructionBusiness, Plumber, Electrician | Pedir presupuesto |
+| `tienda` | Store | Consultar |
+| `inmobiliaria` | RealEstateAgent | Contactar |
+| `generico` (por defecto) | LocalBusiness | Contactar |
+
+El botón principal abre WhatsApp con un mensaje ya escrito ("Hola, quería pedir cita"). Si el local usa una web de reservas (Booksy, TheFork…), pon el enlace en `enlaceReserva` y el botón irá ahí.
 
 ## Campos de `datos.json`
 
-| Campo | Obligatorio | Ejemplo |
+| Campo | Para qué | Ejemplo |
 |---|---|---|
-| `nombre` | sí | `"Cafetería El Rincón"` |
-| `direccion` | sí | `"Calle Mayor 12, 28013 Madrid"` |
-| `categoria` | | `"Cafetería y desayunos"` |
-| `eslogan` | | frase corta bajo el nombre |
-| `descripcion` | | párrafo "Sobre nosotros" |
-| `color` | | color principal, `"#8a4b2a"` |
-| `telefono` | | `"+34 600 000 000"` (activa el botón Llamar) |
-| `whatsapp` | | solo números con prefijo, `"34600000000"` |
+| `nombre` * | | `"Estudio Marta Peluqueros"` |
+| `direccion` * | calle y número | `"Calle de Fuencarral 150"` |
+| `codigoPostal`, `ciudad` | dirección completa para Google | `"28010"`, `"Madrid"` |
+| `zona` | barrio o ciudad para el SEO: "Peluquería **en Chamberí, Madrid**" | `"Chamberí, Madrid"` |
+| `tipo` | sector (tabla de arriba) | `"peluqueria"` |
+| `categoria` | cómo se describe el negocio | `"Peluquería"` |
+| `eslogan` | frase bajo el nombre | |
+| `descripcion` | párrafo "Sobre…" | |
+| `color` | color de marca | `"#3d3a6b"` |
+| `telefono` | botón Llamar | `"+34 611 111 111"` |
+| `whatsapp` | solo números con prefijo | `"34611111111"` |
 | `email` | | |
-| `googleMaps` | | enlace de "Compartir" de la ficha de Google Maps |
-| `zonaHoraria` | | `"Europe/Madrid"` (para el "Abierto ahora") |
-| `valoracion`, `numResenas` | | `4.7`, `213` |
-| `horario` | | `"lunes": ["09:00-14:00", "17:00-20:00"]`, día cerrado = `[]` |
-| `servicios` | | lista de `{ "nombre", "detalle" }` |
-| `resenas` | | lista de `{ "autor", "estrellas", "texto" }` copiadas de Google |
-| `fotos` | | rutas o URLs de imágenes |
-| `redes` | | `{ "instagram": "https://...", "facebook": "https://..." }` |
+| `enlaceReserva` | web de reservas o citas | |
+| `textoBoton`, `tituloServicios` | cambiar los textos que pone el sector | |
+| `googleMaps` | enlace de "Compartir" de la ficha | |
+| `lat`, `lng` | coordenadas (opcional, mejora el SEO local) | `40.43`, `-3.70` |
+| `zonaHoraria` | para el "Abierto ahora" | `"Europe/Madrid"` |
+| `rangoPrecio` | `"€"`, `"€€"`, `"€€€"` | |
+| `cocina` | solo restaurantes | `"Mediterránea"` |
+| `zonaServicio` | oficios que se desplazan | `["Madrid", "Alcobendas"]` |
+| `valoracion`, `numResenas` | | `4.9`, `87` |
+| `horario` | tramos `HH:MM-HH:MM`, día cerrado = `[]` | `"lunes": ["09:00-14:00", "17:00-20:00"]` |
+| `servicios` | lista `{nombre, detalle, precio}` o grupos `{grupo, items: [...]}` | |
+| `resenas` | `{autor, estrellas, texto}` copiadas de Google | |
+| `preguntas` | preguntas frecuentes `{p, r}` (Google puede mostrarlas) | |
+| `fotos` | rutas dentro de la carpeta del local o URLs | `["fotos/1.jpg"]` |
+| `redes` | `{instagram, facebook, tiktok…}` | |
+| `tituloSeo`, `metaDescripcion` | forzar título o descripción de Google | |
+| `demo` | `false` = web definitiva e indexable | |
+| `dominio` | dominio definitivo | `"https://estudiomarta.es"` |
 
-Los campos vacíos simplemente no se muestran.
+\* obligatorio. Los campos vacíos no se muestran.
 
 ## Probar en local
 
 ```bash
 node build.js
-npx serve dist   # o abre dist/<local>/index.html en el navegador
+npx serve dist
 ```
 
-## Activar la publicación (una sola vez)
+## Publicar con Cloudflare Pages (una sola vez)
 
-En GitHub: **Settings → Pages → Source: GitHub Actions**.
+1. Crea una cuenta en https://dash.cloudflare.com
+2. **Workers & Pages → Create → Pages → Connect to Git** y elige este repositorio.
+3. Rama de producción: `main`. Comando de build: `node build.js`. Carpeta de salida: `dist`.
+4. En **Settings → Builds → Branch control**, deja activados los despliegues de todas las ramas (preview).
+
+Desde entonces, cada `git push` a una rama publica o actualiza su demo sola.

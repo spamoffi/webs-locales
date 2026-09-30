@@ -1,6 +1,9 @@
 {
+  "demo": true,
+  "tipo": "cafeteria",
   "nombre": "Cafetería El Rincón",
   "categoria": "Cafetería y desayunos",
+  "zona": "Sol, Madrid",
   "eslogan": "Café de especialidad y bollería casera desde 1998",
   "descripcion": "Somos una cafetería familiar en el centro del barrio. Tostamos nuestro propio café y hacemos la bollería cada mañana. Ven a desayunar, a trabajar un rato o a merendar con amigos.",
   "color": "#8a4b2a",
@@ -8,9 +11,12 @@
   "telefono": "+34 600 000 000",
   "whatsapp": "34600000000",
   "email": "",
-  "direccion": "Calle Mayor 12, 28013 Madrid",
+  "direccion": "Calle Mayor 12",
+  "codigoPostal": "28013",
+  "ciudad": "Madrid",
   "googleMaps": "https://maps.app.goo.gl/XXXXXXXX",
   "zonaHoraria": "Europe/Madrid",
+  "rangoPrecio": "€",
 
   "valoracion": 4.7,
   "numResenas": 213,
@@ -26,16 +32,25 @@
   },
 
   "servicios": [
-    { "nombre": "Desayunos", "detalle": "Tostadas, zumo natural y café desde 3,50 €" },
-    { "nombre": "Bollería casera", "detalle": "Croissants, napolitanas y bizcochos del día" },
-    { "nombre": "Café para llevar", "detalle": "Trae tu taza y te descontamos 0,20 €" },
-    { "nombre": "Wifi y enchufes", "detalle": "Mesas para trabajar con portátil" }
+    { "grupo": "Desayunos", "items": [
+      { "nombre": "Tostada con tomate y AOVE", "detalle": "Pan de masa madre", "precio": "2,80 €" },
+      { "nombre": "Desayuno completo", "detalle": "Café, zumo natural y tostada", "precio": "4,50 €" }
+    ]},
+    { "grupo": "Bollería casera", "items": [
+      { "nombre": "Croissant de mantequilla", "precio": "1,80 €" },
+      { "nombre": "Bizcocho del día", "detalle": "Pregunta por el sabor de hoy", "precio": "2,20 €" }
+    ]}
   ],
 
   "resenas": [
     { "autor": "Laura G.", "estrellas": 5, "texto": "El mejor café del barrio y los croissants están increíbles." },
     { "autor": "Miguel R.", "estrellas": 5, "texto": "Trato muy cercano. Vengo cada mañana antes de trabajar." },
     { "autor": "Ana P.", "estrellas": 4, "texto": "Muy buen sitio para desayunar tranquilo. A veces se llena." }
+  ],
+
+  "preguntas": [
+    { "p": "¿Tenéis opciones sin gluten?", "r": "Sí, tenemos pan y bizcocho sin gluten todos los días." },
+    { "p": "¿Se puede trabajar con portátil?", "r": "Sí, hay wifi gratis y mesas con enchufe." }
   ],
 
   "fotos": [],
