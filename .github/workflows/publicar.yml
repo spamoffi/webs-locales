@@ -1,7 +1,7 @@
 name: Publicar en Cloudflare
 
 # main -> web principal (escaparate de ejemplos)
-# cualquier otra rama -> URL de vista previa propia: https://<rama>-webs-locales.<subdominio>.workers.dev
+# cualquier otra rama -> su propia URL: https://<rama>-webs-locales.<subdominio>.workers.dev
 on:
   push:
     branches-ignore: [fotos-candidatas]
@@ -19,11 +19,12 @@ jobs:
   publicar:
     runs-on: ubuntu-latest
     environment:
-      name: ${{ github.ref_name == 'main' && 'produccion' || format('demo-{0}', github.ref_name) }}
+      name: ${{ github.ref_name == 'main' && 'produccion' || format('web-{0}', github.ref_name) }}
       url: ${{ steps.publicar.outputs.url }}
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: c7df7286262aa3813e6023e29d9ee1c3
+      SUBDOMINIO: davidsalce05
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -34,11 +35,14 @@ jobs:
         id: publicar
         run: |
           set -o pipefail
+          # build.js usa SITE_URL para la URL canónica, el sitemap y las imágenes para redes sociales
           if [ "$GITHUB_REF_NAME" = "main" ]; then
+            export SITE_URL="https://webs-locales.$SUBDOMINIO.workers.dev/"
             npx --yes wrangler@4 deploy 2>&1 | tee salida.txt
           else
             # Alias de la rama: minúsculas, solo letras/números/guiones (local/clinica-x -> local-clinica-x)
             alias=$(echo "$GITHUB_REF_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g' | cut -c1-50 | sed -E 's/-+$//')
+            export SITE_URL="https://$alias-webs-locales.$SUBDOMINIO.workers.dev/"
             npx --yes wrangler@4 versions upload --preview-alias "$alias" 2>&1 | tee salida.txt
           fi
           url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' salida.txt | grep -v -E '^https://[0-9a-f]{8}-' | tail -1)
