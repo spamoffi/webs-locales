@@ -1,0 +1,47 @@
+{
+  "nombre": "Cafetería El Rincón",
+  "categoria": "Cafetería y desayunos",
+  "eslogan": "Café de especialidad y bollería casera desde 1998",
+  "descripcion": "Somos una cafetería familiar en el centro del barrio. Tostamos nuestro propio café y hacemos la bollería cada mañana. Ven a desayunar, a trabajar un rato o a merendar con amigos.",
+  "color": "#8a4b2a",
+
+  "telefono": "+34 600 000 000",
+  "whatsapp": "34600000000",
+  "email": "",
+  "direccion": "Calle Mayor 12, 28013 Madrid",
+  "googleMaps": "https://maps.app.goo.gl/XXXXXXXX",
+  "zonaHoraria": "Europe/Madrid",
+
+  "valoracion": 4.7,
+  "numResenas": 213,
+
+  "horario": {
+    "lunes": ["07:30-14:00", "16:00-20:30"],
+    "martes": ["07:30-14:00", "16:00-20:30"],
+    "miercoles": ["07:30-14:00", "16:00-20:30"],
+    "jueves": ["07:30-14:00", "16:00-20:30"],
+    "viernes": ["07:30-21:00"],
+    "sabado": ["09:00-14:00"],
+    "domingo": []
+  },
+
+  "servicios": [
+    { "nombre": "Desayunos", "detalle": "Tostadas, zumo natural y café desde 3,50 €" },
+    { "nombre": "Bollería casera", "detalle": "Croissants, napolitanas y bizcochos del día" },
+    { "nombre": "Café para llevar", "detalle": "Trae tu taza y te descontamos 0,20 €" },
+    { "nombre": "Wifi y enchufes", "detalle": "Mesas para trabajar con portátil" }
+  ],
+
+  "resenas": [
+    { "autor": "Laura G.", "estrellas": 5, "texto": "El mejor café del barrio y los croissants están increíbles." },
+    { "autor": "Miguel R.", "estrellas": 5, "texto": "Trato muy cercano. Vengo cada mañana antes de trabajar." },
+    { "autor": "Ana P.", "estrellas": 4, "texto": "Muy buen sitio para desayunar tranquilo. A veces se llena." }
+  ],
+
+  "fotos": [],
+
+  "redes": {
+    "instagram": "",
+    "facebook": ""
+  }
+}
