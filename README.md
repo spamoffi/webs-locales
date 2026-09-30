@@ -60,7 +60,7 @@ El botón principal abre WhatsApp con un mensaje ya escrito ("Hola, quería pedi
 | `eslogan` | frase bajo el nombre | |
 | `descripcion` | párrafo "Sobre…" | |
 | `color` | color de marca | `"#3d3a6b"` |
-| `telefono` | botón Llamar | `"+34 611 111 111"` |
+| `telefono` | botón de llamar (muestra el número tal cual) | `"+34 611 111 111"` |
 | `whatsapp` | solo números con prefijo | `"34611111111"` |
 | `email` | | |
 | `enlaceReserva` | web de reservas o citas | |
